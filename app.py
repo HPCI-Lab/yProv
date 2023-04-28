@@ -1,9 +1,11 @@
 from flask import Flask
+from extension import neo4j
 
 from documents import documents_bp
 from entities import entities_bp
 
 app = Flask(__name__)   # name is a special variable that takes the name of the script as the value
+neo4j.connect()
 
 # load the endpoints
 PRE = "/api/v0/"
