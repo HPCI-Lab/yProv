@@ -31,10 +31,9 @@ class Neo4j:
             self.connect()
 
         if db_name not in self.service.keys():
-            # self.create_database(service, dbname)
-            return # error
-        
-        return self.service[db_name]
+            return 
+        else:
+            return self.service[db_name]
     
     def create_db(self, db_name):
         try:
