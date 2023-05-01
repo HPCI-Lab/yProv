@@ -62,6 +62,10 @@ def get_document(doc_id):
     else:        
         return "Here it is your document"
 
+# Get list of documents
+@documents_bp.route('', methods=['GET'])
+def get_list_documents():
+    return neo4j.get_all_dbs()
 
 # Create a document
 @documents_bp.route('/<string:doc_id>', methods=['PUT'])
@@ -88,3 +92,13 @@ def create_document(doc_id):
         graph_db.create(s)
         
         return "Document created", 201
+    
+# Delete a document
+@documents_bp.route('/<string:doc_id>', methods=['DELETE'])
+def delete_document(doc_id):
+    try:
+        neo4j.delete_db(doc_id)
+    except:
+        return "Document doesnt exist", 404
+    else:
+        return "Document deleted", 201

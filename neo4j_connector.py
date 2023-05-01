@@ -9,7 +9,7 @@ class Neo4j:
 
     def is_connected(self):
         return self.connected
-
+    # connect to DBMS istance
     def connect(self):    
         try:
             self.service = GraphService(
@@ -35,6 +35,10 @@ class Neo4j:
         else:
             return self.service[db_name]
     
+    def get_all_dbs(self):
+        # return db that are not system or neo4j
+        return list(filter(lambda db_name: db_name not in {'system', 'neo4j'}, self.service.keys()))
+    
     def create_db(self, db_name):
         try:
             system = self.service.system_graph
@@ -46,6 +50,17 @@ class Neo4j:
         
         return self.service[db_name]
 
+    def delete_db(self, db_name):
+        try:
+            system = self.service.system_graph
+            system.run(f"DROP DATABASE $name;", parameters={"name": db_name})
+        except ClientError as cex:
+            raise cex
+        except DatabaseError as dbex:
+            raise dbex from None
+        
+        return True
+    
     def add_uniqueness_constraints(self) -> None:
         """Add uniqueness constraints to the property key 'id' for all basic PROV types.
         We consider ProvActivity, ProvAgent, ProvEntity, ProvBundle to be basic PROV types.
