@@ -5,25 +5,25 @@ from py2neo.matching import NodeMatcher
 from extension import neo4j
 from elements import node_to_json, json_to_node
 
-entities_bp = Blueprint('entities', __name__)
+agents_bp = Blueprint('agents', __name__)
 
 
-# Get an entity
-@entities_bp.route('/<string:e_id>', methods=['GET'])
-def get_entities(doc_id, e_id):
+# Get an agent
+@agents_bp.route('/<string:ag_id>', methods=['GET'])
+def get_agents(doc_id, ag_id):
     # get the graph db
     graph_db = neo4j.get_db(doc_id)
     # match the node
     nodes = NodeMatcher(graph_db)
-    node = nodes.match('Entity', id=e_id).first() 
+    node = nodes.match('Agent', id=ag_id).first() 
     # otherwise with evaluate and Cypher
 
-    return jsonify(node_to_json(node, 'entity'))
+    return jsonify(node_to_json(node, 'agent'))
 
 
-# Create an entity
-@entities_bp.route('', methods=['POST'])
-def create_entities(doc_id):
+# Create an agent
+@agents_bp.route('', methods=['POST'])
+def create_agents(doc_id):
 
     node = json_to_node(request.json)
 
@@ -31,4 +31,4 @@ def create_entities(doc_id):
     graph_db = neo4j.get_db(doc_id)
     graph_db.create(node)
     
-    return "New entity created", 201
+    return "New agent created", 201

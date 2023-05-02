@@ -86,8 +86,8 @@ def create_document(doc_id):
         data = request.data
         prov_document = ProvDocument.deserialize(content=data)
 
-        # prov2neo function
-        s = encode_graph(prov_document) # also bundles
+        # prov2neo function (works also with bundles)
+        s = encode_graph(prov_document) 
 
         graph_db.create(s)
         
