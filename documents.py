@@ -1,33 +1,16 @@
-from flask import Blueprint, jsonify, request
+import json
+from flask import request, Blueprint
 from prov.model import ProvDocument, ProvElement, ProvRelation
-from prov.serializers.provjson import ProvJSONDecoder
-from py2neo.data import Subgraph, Node, Relationship
-from py2neo import Graph
-from prov2neo.encode import encode_graph, encode_value, str_id, node_label, edge_label
-from py2neo.cypher import Cursor
-
-from prov.model import ProvDocument, ProvRecord
 from prov.graph import INFERRED_ELEMENT_CLASS
-from prov.identifier import Namespace
+from py2neo.data import Subgraph, Node, Relationship
+from prov2neo.encode import encode_graph, encode_value, str_id, node_label, edge_label
 
 from extension import neo4j
-import json
-from elements import node_to_json, json_to_node
+from utils import prov_element_to_node
 
 
 documents_bp = Blueprint('documents', __name__)
 
-def prov_element_to_node(prov_element):
-    # parse attr to props
-    props = {}
-    for attr in prov_element.attributes:
-        props[encode_value(attr[0])] = encode_value(attr[1])
-        
-    return Node(
-        node_label(prov_element),
-        id = str_id(prov_element.identifier),
-        **props
-    )
 
 def prov_relation_to_edge(prov_relation, start_node, end_node):
     # parse attr to props
@@ -97,7 +80,7 @@ def graph_to_prov(graph):
         continue
     
     for n in graph['nodes']:
-        print(node_to_json(n, 'entity'))
+        print('entity')
         # prov_doc.add_record(ProvRecord(identifier=, attributes=))
     # then add nodes
     # finally add records
@@ -129,7 +112,7 @@ def get_document(doc_id):
         assert graph_db
     except AssertionError:
         # no document
-        return "No document", 400
+        return "Document not found", 404
     else:
         # verifica se esiste altra chiamata
         #cursor = graph_db.run('call apoc.export.json.all(null, {stream:true})')
@@ -202,7 +185,6 @@ def create_document(doc_id):
             # print(ns._prefix, ns._uri)
             graph_db.call.n10s.nsprefixes.add(ns._prefix, ns._uri)    # questa procedura fa controllo su prefissi e potrebbe lanciare errori
 
-
         return "Document created", 201
 
     except AssertionError:
@@ -210,13 +192,12 @@ def create_document(doc_id):
     except:
         return "Document not valid", 400        
 
-
 # Delete a document
 @documents_bp.route('/<string:doc_id>', methods=['DELETE'])
 def delete_document(doc_id):
     try:
         neo4j.delete_db(doc_id)
     except:
-        return "Document doesnt exist", 404
+        return "Document not found", 404
     else:
-        return "Document deleted", 201
+        return "Document deleted", 204
