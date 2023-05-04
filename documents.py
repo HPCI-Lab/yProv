@@ -1,29 +1,19 @@
 import json
 from flask import request, Blueprint
-from prov.model import ProvDocument, ProvElement, ProvRelation
+from prov.model import ProvDocument, ProvElement, ProvRelation, ProvRecord
 from prov.graph import INFERRED_ELEMENT_CLASS
 from py2neo.data import Subgraph, Node, Relationship
+from py2neo.matching import NodeMatcher, RelationshipMatcher
 from prov2neo.encode import encode_graph, encode_value, str_id, node_label, edge_label
 
 from extension import neo4j
-from utils import prov_element_to_node
+from utils import prov_element_to_node, prov_relation_to_edge
+
+from prov.constants import *
+from prov.serializers.provjson import *
 
 
 documents_bp = Blueprint('documents', __name__)
-
-
-def prov_relation_to_edge(prov_relation, start_node, end_node):
-    # parse attr to props
-    props = {}
-    for attr in prov_relation.attributes:
-        props[encode_value(attr[0])] = encode_value(attr[1])
-        
-    return Relationship(
-        start_node,
-        edge_label(prov_relation),
-        end_node,
-        **props
-    )
 
 def prov_to_graph(prov_document):
 
@@ -65,39 +55,79 @@ def prov_to_graph(prov_document):
 
 
 
-def parse_node(node):
-    x=0
+def node_to_prov_element(node):
 
-
-    return x
-
-def graph_to_prov(graph):
-    prov_doc = ProvDocument()
-
-    # first add ns
-    for el in graph['prefixes']:
-        # prov_doc.add_namespace(el['properties'][0])
-        continue
+    '''
+        devo fare un parsing migliore
+    '''
+    rec_type_str = list(node.labels)[0]
+    rec_type_str = rec_type_str.lower()
+    rec_type = PROV_RECORD_IDS_MAP[rec_type_str]
     
-    for n in graph['nodes']:
-        print('entity')
-        # prov_doc.add_record(ProvRecord(identifier=, attributes=))
-    # then add nodes
-    # finally add records
-    '''
-    for n in g.nodes():
-        if isinstance(n, ProvRecord):
-            prov_doc.add_record(n)
-    for _, _, edge_data in g.edges(data=True):
-        try:
-            relation = edge_data["relation"]
-            if isinstance(relation, ProvRecord):
-                prov_doc.add_record(relation)
-        except KeyError:
-            pass
-    '''
+    attributes = []
+    other_attributes = []
 
-    return prov_doc
+    for key, value in node.items():
+        if (key=='id'):
+            rec_id = value
+        elif(key in PROV_ATTRIBUTES):
+            attributes.append((key,value))
+        else:
+            other_attributes.append((key,value))
+
+
+    return (rec_type, rec_id, attributes, other_attributes)
+
+
+def type_of_prov_node(node):
+    type_str = list(node.labels)[0].lower()
+    return PROV_RECORD_IDS_MAP[type_str]
+
+def edge_to_prov_relation(edge):
+    rec_type_str = type(edge).__name__
+    rec_type = PROV_RECORD_IDS_MAP[rec_type_str]
+
+    # sicuro univoca, ma posso trovare di meglio
+    rec_id = '_id:' + str(edge.identity)
+
+    attributes = []
+    # get id and type of the edges node
+    for node in {edge.start_node, edge.end_node}:
+        node_type = type_of_prov_node(node)
+        node_id = node['id']
+        attributes.append((node_type, node_id))
+    other_attributes = []
+
+    return (rec_type, rec_id, attributes, other_attributes)
+
+
+def graph_to_prov(nodes, edges):
+
+    prov_document = ProvDocument()
+
+    # add ns
+    for n in nodes:
+        if n.has_label('_NsPrefDef'):
+            for prefix, uri in n.items():
+                prov_document.add_namespace(prefix, uri)
+
+    '''
+        trovare meccanismo per cancellare da lista
+    '''
+    
+    # then add element
+    for n in nodes:
+        if not n.has_label('_NsPrefDef'):
+            (rec_type, rec_id, attributes, other_attributes) = node_to_prov_element(n)
+            prov_document.new_record(rec_type, rec_id, attributes, other_attributes)
+
+    # finally add relation
+    for e in edges:
+        #edge_to_prov_relation(e)
+        (rec_type, rec_id, attributes, other_attributes) = edge_to_prov_relation(e)
+        prov_document.new_record(rec_type, rec_id, attributes, other_attributes)
+
+    return prov_document
 
 
 
@@ -105,7 +135,7 @@ def graph_to_prov(graph):
 @documents_bp.route('/<string:doc_id>', methods=['GET'])
 def get_document(doc_id):
 
-    # get db and check if exists
+    # get db and check if it exists
     graph_db = neo4j.get_db(doc_id)
 
     try:
@@ -116,6 +146,19 @@ def get_document(doc_id):
     else:
         # verifica se esiste altra chiamata
         #cursor = graph_db.run('call apoc.export.json.all(null, {stream:true})')
+
+        node_matcher = NodeMatcher(graph_db)
+        relationship_matcher = RelationshipMatcher(graph_db)
+
+        node_match = node_matcher.match()
+        nodes = node_match.all()
+        #prefix = node_match.where(predicates="'_NsPrefDef' IN labels(_)")
+
+        relationships = relationship_matcher.match().all()
+
+        prov_document = graph_to_prov(nodes, relationships)
+
+        '''
 
         cursor = graph_db.call.apoc.export.json.all(None, {'stream': 'true'})
 
@@ -144,8 +187,9 @@ def get_document(doc_id):
         # print(graph)
 
         graph_to_prov(graph)
+        '''
 
-        return "Here it is your document"
+        return prov_document.serialize()
 
 # Get list of documents
 @documents_bp.route('', methods=['GET'])

@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 
 from prov.model import ProvDocument
-from py2neo import Node
+from py2neo.data import Node
 from py2neo.matching import NodeMatcher
 
 from extension import neo4j
