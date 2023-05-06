@@ -1,31 +1,30 @@
-import json
 from flask import request, Blueprint
-from prov.model import ProvDocument, ProvElement, ProvRelation, ProvRecord
+from prov.model import ProvDocument, ProvElement, ProvRelation
 from prov.graph import INFERRED_ELEMENT_CLASS
-from py2neo.data import Subgraph, Node, Relationship
+from py2neo.data import Subgraph
 from py2neo.matching import NodeMatcher, RelationshipMatcher
-from prov2neo.encode import encode_graph, encode_value, str_id, node_label, edge_label
+# from prov2neo.encode import encode_graph
 
 from extension import neo4j
-from utils import prov_element_to_node, prov_relation_to_edge
-
-from prov.constants import *
-from prov.serializers.provjson import *
-
+from utils import (
+    prov_element_to_node, 
+    prov_relation_to_edge,
+    node_to_prov_element,
+    edge_to_prov_relation
+)
 
 documents_bp = Blueprint('documents', __name__)
 
 def prov_to_graph(prov_document):
 
-    s = Subgraph()
+    graph = Subgraph()
     # Returns a new document containing all records having same identifiers unified (including those inside bundles)
     unified = prov_document.unified()
     node_map = dict()
 
     for element in unified.get_records(ProvElement):
-        # union operator: add Node to the Subgraph
         node = prov_element_to_node(element)
-        s = s | node
+        graph = graph | node        # union operator: add Node to the Subgraph
         node_map[element.identifier] = node
     
 
@@ -49,56 +48,9 @@ def prov_to_graph(prov_document):
             end_node = node_map[qn2]
             rel = prov_relation_to_edge(relation, start_node, end_node)
 
-            s = s | rel
+            graph = graph | rel
             
-    return s
-
-
-
-def node_to_prov_element(node):
-
-    '''
-        devo fare un parsing migliore
-    '''
-    rec_type_str = list(node.labels)[0]
-    rec_type_str = rec_type_str.lower()
-    rec_type = PROV_RECORD_IDS_MAP[rec_type_str]
-    
-    attributes = []
-    other_attributes = []
-
-    for key, value in node.items():
-        if (key=='id'):
-            rec_id = value
-        elif(key in PROV_ATTRIBUTES):
-            attributes.append((key,value))
-        else:
-            other_attributes.append((key,value))
-
-
-    return (rec_type, rec_id, attributes, other_attributes)
-
-
-def type_of_prov_node(node):
-    type_str = list(node.labels)[0].lower()
-    return PROV_RECORD_IDS_MAP[type_str]
-
-def edge_to_prov_relation(edge):
-    rec_type_str = type(edge).__name__
-    rec_type = PROV_RECORD_IDS_MAP[rec_type_str]
-
-    # sicuro univoca, ma posso trovare di meglio
-    rec_id = '_id:' + str(edge.identity)
-
-    attributes = []
-    # get id and type of the edges node
-    for node in {edge.start_node, edge.end_node}:
-        node_type = type_of_prov_node(node)
-        node_id = node['id']
-        attributes.append((node_type, node_id))
-    other_attributes = []
-
-    return (rec_type, rec_id, attributes, other_attributes)
+    return graph
 
 
 def graph_to_prov(nodes, edges):
@@ -118,14 +70,14 @@ def graph_to_prov(nodes, edges):
     # then add element
     for n in nodes:
         if not n.has_label('_NsPrefDef'):
-            (rec_type, rec_id, attributes, other_attributes) = node_to_prov_element(n)
-            prov_document.new_record(rec_type, rec_id, attributes, other_attributes)
+            node_to_prov_element(n, prov_document)
 
     # finally add relation
     for e in edges:
         #edge_to_prov_relation(e)
-        (rec_type, rec_id, attributes, other_attributes) = edge_to_prov_relation(e)
-        prov_document.new_record(rec_type, rec_id, attributes, other_attributes)
+        #(rec_type, rec_id, attributes, other_attributes) = edge_to_prov_relation(e)
+        edge_to_prov_relation(e, prov_document)
+        #prov_document.new_record(rec_type, rec_id, attributes, other_attributes)
 
     return prov_document
 

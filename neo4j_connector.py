@@ -9,7 +9,7 @@ class Neo4j:
 
     def is_connected(self):
         return self.connected
-    # connect to DBMS istance
+
     def connect(self):    
         try:
             self.service = GraphService(
@@ -60,7 +60,7 @@ class Neo4j:
             raise dbex from None
         
         return True
-    
+    ''' 
     def add_uniqueness_constraints(self) -> None:
         """Add uniqueness constraints to the property key 'id' for all basic PROV types.
         We consider ProvActivity, ProvAgent, ProvEntity, ProvBundle to be basic PROV types.
@@ -72,3 +72,4 @@ class Neo4j:
         for label in NODE_LABELS.values():
             if "id" not in self.graph_db.schema.get_uniqueness_constraints(label):
                 self.graph_db.schema.create_uniqueness_constraint(label, "id")
+    '''  

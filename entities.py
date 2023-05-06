@@ -1,11 +1,10 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, request
 
 from prov.model import ProvDocument
-from py2neo.data import Node
 from py2neo.matching import NodeMatcher
 
 from extension import neo4j
-from utils import node_to_json, json_element_to_prov_element, prov_element_to_node
+from utils import json_element_to_prov_element, prov_element_to_node, node_to_prov_element, prov_element_to_json
 
 
 entities_bp = Blueprint('entities', __name__)
@@ -17,12 +16,17 @@ def get_entities(doc_id, e_id):
     # get the graph db
     graph_db = neo4j.get_db(doc_id)
     # match the node
-    nodes = NodeMatcher(graph_db)
-    node = nodes.match('Entity', id=e_id).first() 
-    # otherwise with evaluate and Cypher
+    node_matcher = NodeMatcher(graph_db)
+    node = node_matcher.match('Entity', id=e_id).first() 
 
-    return jsonify(node_to_json(node, 'entity'))
+    prov_document = ProvDocument()
+    # get the ns of the document
+    for ns in graph_db.call.n10s.nsprefixes.list():
+        prov_document.add_namespace(ns[0], ns[1])
 
+    prov_element = node_to_prov_element(node, prov_document)
+
+    return prov_element_to_json(prov_element)
 
 # Create an entity
 '''
