@@ -1,4 +1,4 @@
-from flask import request, Blueprint
+from flask import request, Response, Blueprint
 from prov.model import ProvDocument, ProvElement, ProvRelation
 from prov.graph import INFERRED_ELEMENT_CLASS
 from py2neo.data import Subgraph
@@ -83,7 +83,7 @@ def graph_to_prov(nodes, edges):
 
 
 
-# Get a document
+# Read
 @documents_bp.route('/<string:doc_id>', methods=['GET'])
 def get_document(doc_id):
 
@@ -141,14 +141,14 @@ def get_document(doc_id):
         graph_to_prov(graph)
         '''
 
-        return prov_document.serialize()
+        return Response(prov_document.serialize(), mimetype='application/json')
 
-# Get list of documents
+# Get list
 @documents_bp.route('', methods=['GET'])
-def get_list_documents():
+def get_documents_list():
     return neo4j.get_all_dbs()
 
-# Create a document
+# Create
 @documents_bp.route('/<string:doc_id>', methods=['PUT'])
 def create_document(doc_id):
 
@@ -188,12 +188,21 @@ def create_document(doc_id):
     except:
         return "Document not valid", 400        
 
-# Delete a document
+# Delete
 @documents_bp.route('/<string:doc_id>', methods=['DELETE'])
 def delete_document(doc_id):
+    db_list = []
     try:
-        neo4j.delete_db(doc_id)
+        db_list = neo4j.get_all_dbs()
     except:
-        return "Document not found", 404
+        return "DB error", 500
+    
+    if(doc_id in db_list):
+        try:
+            neo4j.delete_db(doc_id)
+        except:
+            return "DB error", 500
+        
+        return "Document deleted", 200
     else:
-        return "Document deleted", 204
+        return "Document not found", 404
