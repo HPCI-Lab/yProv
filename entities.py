@@ -5,7 +5,7 @@ from py2neo.matching import NodeMatcher
 from py2neo import Node
 
 from extension import neo4j
-from utils import json_element_to_prov_element, prov_element_to_node, node_to_prov_element, prov_element_to_json
+from utils import json_to_prov_record, prov_element_to_node, node_to_prov_element, prov_element_to_json
 
 
 entities_bp = Blueprint('entities', __name__)
@@ -34,7 +34,7 @@ def create_entities(doc_id):
         prov_document.add_namespace(ns[0], ns[1])
 
     # parsing
-    prov_element = json_element_to_prov_element(request.json, prov_document)
+    prov_element = json_to_prov_record(request.json, prov_document)
     node = prov_element_to_node(prov_element)
 
     try:
@@ -126,7 +126,7 @@ def replace_entities(doc_id, e_id):
         prov_document.add_namespace(ns[0], ns[1])
 
     # parsing
-    prov_element = json_element_to_prov_element(request.json, prov_document)
+    prov_element = json_to_prov_record(request.json, prov_document)
     input_node = prov_element_to_node(prov_element)
     
     # if exist then update else create

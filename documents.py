@@ -10,7 +10,8 @@ from utils import (
     prov_element_to_node, 
     prov_relation_to_edge,
     node_to_prov_element,
-    edge_to_prov_relation
+    edge_to_prov_relation,
+    set_ns
 )
 
 documents_bp = Blueprint('documents', __name__)
@@ -53,16 +54,11 @@ def prov_to_graph(prov_document):
     return graph
 
 
-def graph_to_prov(nodes, edges):
+def graph_to_prov(graph, nodes, edges):
 
     prov_document = ProvDocument()
 
-    # add ns
-    for n in nodes:
-        if n.has_label('_NsPrefDef'):
-            for prefix, uri in n.items():
-                prov_document.add_namespace(prefix, uri)
-
+    set_ns(graph, prov_document)
     '''
         trovare meccanismo per cancellare da lista
     '''
@@ -88,19 +84,19 @@ def graph_to_prov(nodes, edges):
 def get_document(doc_id):
 
     # get db and check if it exists
-    graph_db = neo4j.get_db(doc_id)
+    graph = neo4j.get_db(doc_id)
 
     try:
-        assert graph_db
+        assert graph
     except AssertionError:
         # no document
         return "Document not found", 404
     else:
         # verifica se esiste altra chiamata
-        #cursor = graph_db.run('call apoc.export.json.all(null, {stream:true})')
+        #cursor = graph.run('call apoc.export.json.all(null, {stream:true})')
 
-        node_matcher = NodeMatcher(graph_db)
-        relationship_matcher = RelationshipMatcher(graph_db)
+        node_matcher = NodeMatcher(graph)
+        relationship_matcher = RelationshipMatcher(graph)
 
         node_match = node_matcher.match()
         nodes = node_match.all()
@@ -108,11 +104,11 @@ def get_document(doc_id):
 
         relationships = relationship_matcher.match().all()
 
-        prov_document = graph_to_prov(nodes, relationships)
+        prov_document = graph_to_prov(graph, nodes, relationships)
 
         '''
 
-        cursor = graph_db.call.apoc.export.json.all(None, {'stream': 'true'})
+        cursor = graph.call.apoc.export.json.all(None, {'stream': 'true'})
 
         result_str = cursor.evaluate(field='data')
         result_list = result_str.rsplit("\n")
@@ -157,11 +153,11 @@ def create_document(doc_id):
     if (content_type != 'application/json'):
         return 'Content-Type not supported!', 400
     
-    graph_db = neo4j.get_db(doc_id)
+    graph = neo4j.get_db(doc_id)
 
     try:
         # check if a document with the same id is already in neo4j 
-        assert not graph_db
+        assert not graph
 
         # get the ProvDocument
         data = request.data
@@ -173,13 +169,17 @@ def create_document(doc_id):
         s = prov_to_graph(prov_document)
 
         # create db and save doc
-        graph_db = neo4j.create_db(doc_id)
-        graph_db.create(s)
+        graph = neo4j.create_db(doc_id)
+        graph.create(s)
+
 
         # add ns
+        default_ns = prov_document.get_default_namespace()
+        if(default_ns):
+            graph.call.n10s.nsprefixes.add('default', default_ns._uri)    # questa procedura fa controllo su prefissi e potrebbe lanciare errori
+        
         for ns in prov_document.get_registered_namespaces():
-            # print(ns._prefix, ns._uri)
-            graph_db.call.n10s.nsprefixes.add(ns._prefix, ns._uri)    # questa procedura fa controllo su prefissi e potrebbe lanciare errori
+            graph.call.n10s.nsprefixes.add(ns._prefix, ns._uri)    # questa procedura fa controllo su prefissi e potrebbe lanciare errori
 
         return "Document created", 201
 

@@ -1,11 +1,10 @@
 from py2neo.data import Node, Relationship
 from prov2neo.encode import encode_value, str_id, node_label, edge_label
-from prov.model import first
+from prov.model import first, ProvRelation
 from prov.constants import *
 from prov.serializers.provjson import *
 
-from datetime import datetime
-
+import uuid
 
 
 # map wich assign foreach PROV-DM Relation its binary(subject, object) PROV-DM Types
@@ -46,7 +45,6 @@ MAP_PROV_REL_TYPES = {
 }
 
 
-
 def json_to_node(json):
     # get label, id and props of the element
     node_label = list(json.keys())[0]
@@ -73,17 +71,31 @@ def node_to_json(node, type):
     }
 
 
+def set_ns(graph, bundle):
+    default = False
+    # get the ns of the document            
+    for ns in graph.call.n10s.nsprefixes.list():
+        if(ns[0]=='default'):
+            bundle.set_default_namespace(ns[1])
+            default=True
+        else:
+            bundle.add_namespace(ns[0], ns[1])
+    if not default:
+        bundle.set_default_namespace('')
+
+
 '''
-    parse input json to prov
+    json_to_prov.js
 '''
 # based on decode_json_container at <https://github.com/trungdong/prov/blob/master/src/prov/serializers/provjson.py>
-def json_element_to_prov_element(json, bundle):
+def json_to_prov_record(json, bundle):
 
     for rec_type_str, rec_content in json.items():
         # get the type of the record 
         rec_type = PROV_RECORD_IDS_MAP[rec_type_str]
         
         for rec_id, content in rec_content.items():
+            print(rec_id)
             if hasattr(content, "items"):  # it is a dict
                 #  There is only one element, create a singleton list
                 elements = [content]
@@ -158,48 +170,25 @@ def json_element_to_prov_element(json, bundle):
 
 
 '''
-    parse prov to neo4j nodes and edges
+    neo_to_prov.js
 '''
-def prov_element_to_node(prov_element):
-    # parse attr to props
-    props = {}
-    for attr in prov_element.attributes:
-        props[encode_value(attr[0])] = encode_value(attr[1])
-        
-    return Node(
-        node_label(prov_element),
-        id = str_id(prov_element.identifier),
-        **props
-    )
-
-def prov_relation_to_edge(prov_relation, start_node, end_node):
-    # parse attr to props
-    props = {}
-
-    # skip first two attrs (e.g. the two nodes)
-    for attr in prov_relation.formal_attributes[2:]:
-        props[encode_value(attr[0])] = encode_value(attr[1])
-
-    # extra attr
-    for attr in prov_relation.extra_attributes:
-        props[encode_value(attr[0])] = encode_value(attr[1])
-        
-    return Relationship(
-        start_node,
-        edge_label(prov_relation),
-        end_node,
-        **props
-    )
-
-
-
 def type_of_prov_node(node):
     type_str = list(node.labels)[0].lower()
     return PROV_RECORD_IDS_MAP[type_str]
 
-'''
-    parse neo4j nodes and edges to prov
-'''
+def encode_literal(value):
+    separator = '%%'
+    if (separator in value):
+
+        literal = value.split(separator)
+        v=literal[0].replace('\"','')
+        dt=literal[1]
+
+        return Literal(v, dt)
+    else:
+        # simple type, just return it
+        return value
+
 def node_to_prov_element(node, bundle):
 
     rec_type = type_of_prov_node(node)
@@ -225,23 +214,18 @@ def node_to_prov_element(node, bundle):
                 attributes[attr] = value
             else:
                 other_attributes.append(
-                    (attr, decode_json_representation(value, bundle))
+                    (attr, encode_literal(value))
                 )
         else:
             rec_id = value
         
-    bundle.new_record(rec_type, rec_id, attributes, other_attributes)
-    return bundle.get_record(rec_id)[0]
-    #return 
-    # return (rec_type, rec_id, attributes, other_attributes)
+    return bundle.new_record(rec_type, rec_id, attributes, other_attributes)
 
 def edge_to_prov_relation(edge, bundle):
 
     rec_type_str = type(edge).__name__
     rec_type = PROV_RECORD_IDS_MAP[rec_type_str]    #e.g wasDerivedFrom': <QualifiedName: prov:Derivation>
 
-    # easy unique id
-    rec_id = '_id:' + str(edge.identity)
     attributes = dict()
     other_attributes = []
 
@@ -262,33 +246,36 @@ def edge_to_prov_relation(edge, bundle):
     # again this bit from decode_json_container at <https://github.com/trungdong/prov/blob/master/src/prov/serializers/provjson.py>
 
     for attr_name, value in edge.items():
-        attr = (
-            PROV_ATTRIBUTES_ID_MAP[attr_name]
-            if attr_name in PROV_ATTRIBUTES_ID_MAP
-            else valid_qualified_name(bundle, attr_name)
-        )
-        if attr in PROV_ATTRIBUTES:
-            value = (
-                valid_qualified_name(bundle, value)
-                if attr in PROV_ATTRIBUTE_QNAMES
-                # else parse_xsd_datetime(value) # TypeError: Parser must be a string or character stream, not DateTime
-                else str(value)
+        if not attr_name == 'id':
+            attr = (
+                PROV_ATTRIBUTES_ID_MAP[attr_name]
+                if attr_name in PROV_ATTRIBUTES_ID_MAP
+                else valid_qualified_name(bundle, attr_name)
             )
-            attributes[attr] = value
+            if attr in PROV_ATTRIBUTES:
+                value = (
+                    valid_qualified_name(bundle, value)
+                    if attr in PROV_ATTRIBUTE_QNAMES
+                    # else parse_xsd_datetime(value) # TypeError: Parser must be a string or character stream, not DateTime
+                    else str(value)
+                )
+                attributes[attr] = value
+            else:
+                '''
+                    sistemare prov role finisce qua
+                '''
+                other_attributes.append(
+                    (attr, encode_literal(value))
+                )
         else:
-            '''
-                sistemare prov role finisce qua
-            '''
-            other_attributes.append(
-                (attr, decode_json_representation(value, bundle))
-            )
-        
-    bundle.new_record(rec_type, rec_id, attributes, other_attributes)
-    return
-    #return bundle.get_record(rec_id)[0]
+            rec_id = value
+    
+    return bundle.new_record(rec_type, rec_id, attributes, other_attributes)
 
 
-
+'''
+    prov_to_json.js
+'''
 # from encode_json_container at <https://github.com/trungdong/prov/blob/master/src/prov/serializers/provjson.py>
 def encode_attributes(record):
     record_json = {}
@@ -315,7 +302,6 @@ def encode_attributes(record):
                     )
     return record_json
 
-
 def prov_element_to_json(prov_element):
 
     rec_label = PROV_N_MAP[prov_element.get_type()]
@@ -327,3 +313,55 @@ def prov_element_to_json(prov_element):
             identifier : attributes
         }
     }
+
+def prov_relation_to_json(prov_element):
+
+    rec_label = PROV_N_MAP[prov_element.get_type()]
+    identifier = str(prov_element._identifier)
+    attributes = encode_attributes(prov_element)
+
+    return {
+        rec_label : {
+            identifier : attributes
+        }
+    }
+
+
+'''
+    prov_to_neo.js
+'''
+def prov_element_to_node(prov_element):
+    # parse attr to props
+    props = {}
+    for attr in prov_element.attributes:
+        props[encode_value(attr[0])] = encode_value(attr[1])
+        
+    return Node(
+        node_label(prov_element),
+        id = str_id(prov_element.identifier),
+        **props
+    )
+
+def prov_relation_to_edge(prov_relation, start_node, end_node):
+    # parse attr to props
+    props = {}
+
+    # skip first two attrs (e.g. the two nodes)
+    for attr in prov_relation.formal_attributes[2:]:
+        props[encode_value(attr[0])] = encode_value(attr[1])
+
+    # extra attr
+    for attr in prov_relation.extra_attributes:
+        props[encode_value(attr[0])] = encode_value(attr[1])
+    
+    if not prov_relation.identifier:
+        props['id'] = str(uuid.uuid4())
+    else:
+        props['id'] = str(prov_relation.identifier)
+        
+    return Relationship(
+        start_node,
+        edge_label(prov_relation),
+        end_node,
+        **props
+    )

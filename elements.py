@@ -4,13 +4,18 @@ from prov.model import ProvDocument
 from py2neo.matching import NodeMatcher
 
 from extension import neo4j
-from utils import json_element_to_prov_element, prov_element_to_node, node_to_prov_element, prov_element_to_json
+from utils import (
+    json_to_prov_record,
+    prov_element_to_node,
+    node_to_prov_element,
+    prov_element_to_json,
+    set_ns               
+)
 
 
 elements_bp = Blueprint('elements', __name__)
 
 # Create
-
 @elements_bp.route('', methods=['POST'])
 def create_elements(doc_id):
     try:
@@ -26,12 +31,10 @@ def create_elements(doc_id):
 
     prov_document = ProvDocument()
 
-    # get the ns of the document
-    for ns in graph.call.n10s.nsprefixes.list():
-        prov_document.add_namespace(ns[0], ns[1])
+    set_ns(graph, prov_document)
 
     # parsing
-    prov_element = json_element_to_prov_element(request.json, prov_document)
+    prov_element = json_to_prov_record(request.json, prov_document)
     node = prov_element_to_node(prov_element)
 
     try:
@@ -67,9 +70,8 @@ def get_elements(doc_id, e_id):
     
 
     prov_document = ProvDocument()
-    # get the ns of the document
-    for ns in graph.call.n10s.nsprefixes.list():
-        prov_document.add_namespace(ns[0], ns[1])
+
+    set_ns(graph, prov_document)
 
     prov_element = node_to_prov_element(node, prov_document)
 
@@ -97,12 +99,10 @@ def replace_elements(doc_id, e_id):
 
     prov_document = ProvDocument()
 
-    # get the ns of the document
-    for ns in graph.call.n10s.nsprefixes.list():
-        prov_document.add_namespace(ns[0], ns[1])
+    set_ns(graph, prov_document)
 
     # parsing
-    prov_element = json_element_to_prov_element(request.json, prov_document)
+    prov_element = json_to_prov_record(request.json, prov_document)
     input_node = prov_element_to_node(prov_element)
     
     # if exist then update else create
@@ -111,9 +111,7 @@ def replace_elements(doc_id, e_id):
         for key, value in input_node.items():
             node[key]=value
 
-        transaction = graph.begin()
-        transaction.graph.push(node)
-        transaction.commit()
+        graph.push(node)
 
         return "Element updated", 200
     else:
