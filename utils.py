@@ -198,6 +198,7 @@ def node_to_prov_element(node, bundle):
 
     #  bit from decode_json_container at <https://github.com/trungdong/prov/blob/master/src/prov/serializers/provjson.py>
     for attr_name, value in node.items():
+        attributes = dict()
         if not attr_name == 'id':
             attr = (
                 PROV_ATTRIBUTES_ID_MAP[attr_name]

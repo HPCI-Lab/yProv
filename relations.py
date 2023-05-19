@@ -18,7 +18,7 @@ relations_bp = Blueprint('relations', __name__)
 
 # Create
 @relations_bp.route('', methods=['POST'])
-def create_relations(doc_id):
+def create_relation(doc_id):
     try:
         graph = neo4j.get_db(doc_id)
     except:
@@ -65,7 +65,7 @@ def create_relations(doc_id):
 
 # Read
 @relations_bp.route('/<string:r_id>', methods=['GET'])
-def get_relations(doc_id, r_id):
+def get_relation(doc_id, r_id):
     try:
         graph = neo4j.get_db(doc_id)
     except:
@@ -96,7 +96,7 @@ def get_relations(doc_id, r_id):
 
 # Update
 @relations_bp.route('/<string:r_id>', methods=['PUT'])
-def replace_relations(doc_id, r_id):
+def replace_relation(doc_id, r_id):
     try:
         graph = neo4j.get_db(doc_id)
     except:
@@ -168,7 +168,7 @@ def replace_relations(doc_id, r_id):
 
 # Delete
 @relations_bp.route('/<string:r_id>', methods=['DELETE'])
-def delete_relations(doc_id, r_id):
+def delete_relation(doc_id, r_id):
     try:
         graph = neo4j.get_db(doc_id)
     except:

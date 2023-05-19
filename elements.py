@@ -17,7 +17,7 @@ elements_bp = Blueprint('elements', __name__)
 
 # Create
 @elements_bp.route('', methods=['POST'])
-def create_elements(doc_id):
+def create_element(doc_id):
     try:
         graph = neo4j.get_db(doc_id)
     except:
@@ -46,7 +46,7 @@ def create_elements(doc_id):
 
 # Read
 @elements_bp.route('/<string:e_id>', methods=['GET'])
-def get_elements(doc_id, e_id):
+def get_element(doc_id, e_id):
     try:
         graph = neo4j.get_db(doc_id)
     except:
@@ -62,11 +62,10 @@ def get_elements(doc_id, e_id):
     try:
         # match the node
         node_matcher = NodeMatcher(graph)
-        # node = node_matcher.match('Entity', id=e_id).first() 
-        node = node_matcher.match(id=e_id).first()
+        node = node_matcher.match('Entity', id=e_id).first() 
         assert(node)
     except AssertionError:
-        return "Element not found", 404
+        return "Entity not found", 404
     
 
     prov_document = ProvDocument()
@@ -79,7 +78,7 @@ def get_elements(doc_id, e_id):
 
 # Update
 @elements_bp.route('/<string:e_id>', methods=['PUT'])
-def replace_elements(doc_id, e_id):
+def replace_element(doc_id, e_id):
     try:
         graph = neo4j.get_db(doc_id)
     except:
@@ -124,7 +123,7 @@ def replace_elements(doc_id, e_id):
 
 # Delete
 @elements_bp.route('/<string:e_id>', methods=['DELETE'])
-def delete_elements(doc_id, e_id):
+def delete_element(doc_id, e_id):
     try:
         graph = neo4j.get_db(doc_id)
     except:
