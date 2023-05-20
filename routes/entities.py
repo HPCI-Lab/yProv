@@ -2,23 +2,20 @@ from flask import Blueprint, request
 
 from prov.model import ProvDocument
 from py2neo.matching import NodeMatcher
+from py2neo import Node
 
 from extension import neo4j
-from utils import (
-    NS_NODE_LABEL,
-    json_to_prov_record,
-    prov_element_to_node,
-    node_to_prov_element,
-    prov_element_to_json,
-    set_document_ns               
-)
+from .utils import json_to_prov_record, prov_element_to_node, node_to_prov_element, prov_element_to_json
 
 
-elements_bp = Blueprint('elements', __name__)
+entities_bp = Blueprint('entities', __name__)
 
 # Create
-@elements_bp.route('', methods=['POST'])
-def create_element(doc_id):
+'''
+    Idempotente, non faccio check se esiste già entità
+'''
+@entities_bp.route('', methods=['POST'])
+def create_entities(doc_id):
     try:
         graph = neo4j.get_db(doc_id)
     except:
@@ -30,11 +27,11 @@ def create_element(doc_id):
     except AssertionError:
         return "Document not found", 404
 
-    # create ProvDocument and add namespaces
     prov_document = ProvDocument()
-    node_matcher = NodeMatcher(graph)
-    ns_node = node_matcher.match(NS_NODE_LABEL).first()
-    set_document_ns(ns_node, prov_document)
+
+    # get the ns of the document
+    for ns in graph.call.n10s.nsprefixes.list():
+        prov_document.add_namespace(ns[0], ns[1])
 
     # parsing
     prov_element = json_to_prov_record(request.json, prov_document)
@@ -45,11 +42,32 @@ def create_element(doc_id):
     except:
         return "DB error", 500
 
-    return "Element created", 201
+    '''
+    # cicla su input dict 
+    for rec_type_str in request.json:
+        
+        # get the type of the record 
+        rec_type = PROV_RECORD_IDS_MAP[rec_type_str]
+
+        for rec_id, content in request.json[rec_type_str].items():
+            if hasattr(content, "items"):  # it is a dict
+                #  There is only one element, create a singleton list
+                elements = [content]
+            else:
+                # expect it to be a list of dictionaries
+                elements = content
+        print(elements)
+
+    node = json_to_node(request.json)
+
+    # save in the graph
+    graph.create(node)
+    '''
+    return "New entity created", 201
 
 # Read
-@elements_bp.route('/<string:e_id>', methods=['GET'])
-def get_element(doc_id, e_id):
+@entities_bp.route('/<string:e_id>', methods=['GET'])
+def get_entities(doc_id, e_id):
     try:
         graph = neo4j.get_db(doc_id)
     except:
@@ -65,25 +83,25 @@ def get_element(doc_id, e_id):
     try:
         # match the node
         node_matcher = NodeMatcher(graph)
-        node = node_matcher.match('Entity', id=e_id).first() 
+        # node = node_matcher.match('Entity', id=e_id).first() 
+        node = node_matcher.match(id=e_id).first()
         assert(node)
     except AssertionError:
-        return "Entity not found", 404
+        return "Element not found", 404
     
 
-    # create ProvDocument and add namespaces
     prov_document = ProvDocument()
-    node_matcher = NodeMatcher(graph)
-    ns_node = node_matcher.match(NS_NODE_LABEL).first()
-    set_document_ns(ns_node, prov_document)
+    # get the ns of the document
+    for ns in graph.call.n10s.nsprefixes.list():
+        prov_document.add_namespace(ns[0], ns[1])
 
     prov_element = node_to_prov_element(node, prov_document)
 
     return prov_element_to_json(prov_element)
 
 # Update
-@elements_bp.route('/<string:e_id>', methods=['PUT'])
-def replace_element(doc_id, e_id):
+@entities_bp.route('/<string:e_id>', methods=['PUT'])
+def replace_entities(doc_id, e_id):
     try:
         graph = neo4j.get_db(doc_id)
     except:
@@ -100,11 +118,12 @@ def replace_element(doc_id, e_id):
     # node = node_matcher.match('Entity', id=e_id).first() 
     node = node_matcher.match(id=e_id).first()
 
-    # create ProvDocument and add namespaces
+
     prov_document = ProvDocument()
-    node_matcher = NodeMatcher(graph)
-    ns_node = node_matcher.match(NS_NODE_LABEL).first()
-    set_document_ns(ns_node, prov_document)
+
+    # get the ns of the document
+    for ns in graph.call.n10s.nsprefixes.list():
+        prov_document.add_namespace(ns[0], ns[1])
 
     # parsing
     prov_element = json_to_prov_record(request.json, prov_document)
@@ -116,7 +135,9 @@ def replace_element(doc_id, e_id):
         for key, value in input_node.items():
             node[key]=value
 
-        graph.push(node)
+        transaction = graph.begin()
+        transaction.graph.push(node)
+        transaction.commit()
 
         return "Element updated", 200
     else:
@@ -128,8 +149,8 @@ def replace_element(doc_id, e_id):
         return "Element created", 201
 
 # Delete
-@elements_bp.route('/<string:e_id>', methods=['DELETE'])
-def delete_element(doc_id, e_id):
+@entities_bp.route('/<string:e_id>', methods=['DELETE'])
+def delete_entities(doc_id, e_id):
     try:
         graph = neo4j.get_db(doc_id)
     except:

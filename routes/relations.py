@@ -4,10 +4,9 @@ from prov.model import ProvDocument
 from py2neo.matching import RelationshipMatcher, NodeMatcher
 
 from extension import neo4j
-from utils import (
+from .utils import (
     NS_NODE_LABEL,
     json_to_prov_record,
-    prov_element_to_node,
     prov_relation_to_edge,
     edge_to_prov_relation,
     prov_relation_to_json,

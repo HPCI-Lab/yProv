@@ -6,7 +6,7 @@ from py2neo.matching import NodeMatcher, RelationshipMatcher
 # from prov2neo.encode import encode_graph
 
 from extension import neo4j
-from utils import (
+from .utils import (
     ELEMENT_NODE_PRIMARY_LABEL,
     ELEMENT_NODE_PRIMARY_ID,
     NS_NODE_LABEL,

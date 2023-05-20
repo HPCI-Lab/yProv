@@ -3,7 +3,7 @@ from py2neo import Node
 from py2neo.matching import NodeMatcher
 
 from extension import neo4j
-from utils import node_to_json, json_to_node
+from .utils import node_to_json, json_to_node
 
 agents_bp = Blueprint('agents', __name__)
 
