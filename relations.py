@@ -5,12 +5,13 @@ from py2neo.matching import RelationshipMatcher, NodeMatcher
 
 from extension import neo4j
 from utils import (
+    NS_NODE_LABEL,
     json_to_prov_record,
     prov_element_to_node,
     prov_relation_to_edge,
     edge_to_prov_relation,
     prov_relation_to_json,
-    set_ns
+    set_document_ns
 )
 
 
@@ -30,10 +31,11 @@ def create_relation(doc_id):
     except AssertionError as aerr:
         return str(aerr), 404
 
+    # create ProvDocument and add namespaces
     prov_document = ProvDocument()
-
-    # set the ns of the document
-    set_ns(graph, prov_document)
+    node_matcher = NodeMatcher(graph)
+    ns_node = node_matcher.match(NS_NODE_LABEL).first()
+    set_document_ns(ns_node, prov_document)
 
     # parsing
     prov_relation = json_to_prov_record(request.json, prov_document)
@@ -86,9 +88,11 @@ def get_relation(doc_id, r_id):
     except AssertionError:
         return "Relation not found", 404
     
+    # create ProvDocument and add namespaces
     prov_document = ProvDocument()
-
-    set_ns(graph, prov_document)
+    node_matcher = NodeMatcher(graph)
+    ns_node = node_matcher.match(NS_NODE_LABEL).first()
+    set_document_ns(ns_node, prov_document)
 
     prov_relation = edge_to_prov_relation(rel, prov_document)
 
@@ -114,10 +118,11 @@ def replace_relation(doc_id, r_id):
     rel_matcher = RelationshipMatcher(graph)
     old_rel = rel_matcher.match(id=r_id).first()
     
+    # create ProvDocument and add namespaces
     prov_document = ProvDocument()
-
-    # set the ns of the document
-    set_ns(graph, prov_document)
+    node_matcher = NodeMatcher(graph)
+    ns_node = node_matcher.match(NS_NODE_LABEL).first()
+    set_document_ns(ns_node, prov_document)
 
     # parsing
     input_prov_relation = json_to_prov_record(request.json, prov_document)
@@ -150,7 +155,7 @@ def replace_relation(doc_id, r_id):
             # update
             old_rel.clear()
             for key, value in new_rel.items():
-                if key is not 'id':
+                if not key == 'id':
                     old_rel[key]=value
             old_rel['id'] = r_id
             graph.push(old_rel)

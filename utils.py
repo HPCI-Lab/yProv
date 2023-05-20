@@ -44,6 +44,11 @@ MAP_PROV_REL_TYPES = {
     "hadMember": [PROV_ATTR_COLLECTION, PROV_ATTR_ENTITY]             
 }
 
+# graph merge
+ELEMENT_NODE_PRIMARY_LABEL = '_ProvElementNode'
+ELEMENT_NODE_PRIMARY_ID = 'id'
+NS_NODE_LABEL = '_Namespace'
+
 
 def json_to_node(json):
     # get label, id and props of the element
@@ -71,16 +76,26 @@ def node_to_json(node, type):
     }
 
 
-def set_ns(graph, bundle):
+# handling neo4j ns
+def get_ns_node(prov_document):
+    ns_node = Node(NS_NODE_LABEL)
+    default_ns = prov_document.get_default_namespace()
+    if(default_ns):
+        ns_node['default'] = default_ns._uri
+    for ns in prov_document.get_registered_namespaces():
+        ns_node[ns._prefix] = ns._uri
+    return ns_node
+
+def set_document_ns(ns_node, bundle):
     default = False
-    # get the ns of the document            
-    for ns in graph.call.n10s.nsprefixes.list():
-        if(ns[0]=='default'):
-            bundle.set_default_namespace(ns[1])
+    for attr_name, value in ns_node.items():
+        if attr_name =='default':
+            bundle.set_default_namespace(value)
             default=True
         else:
-            bundle.add_namespace(ns[0], ns[1])
+            bundle.add_namespace(attr_name, value)
     if not default:
+        # for relationships
         bundle.set_default_namespace('')
 
 
@@ -95,7 +110,6 @@ def json_to_prov_record(json, bundle):
         rec_type = PROV_RECORD_IDS_MAP[rec_type_str]
         
         for rec_id, content in rec_content.items():
-            print(rec_id)
             if hasattr(content, "items"):  # it is a dict
                 #  There is only one element, create a singleton list
                 elements = [content]
@@ -173,8 +187,9 @@ def json_to_prov_record(json, bundle):
     neo_to_prov.js
 '''
 def type_of_prov_node(node):
-    type_str = list(node.labels)[0].lower()
-    return PROV_RECORD_IDS_MAP[type_str]
+    for label in node.labels:
+        if not label == ELEMENT_NODE_PRIMARY_LABEL:
+            return PROV_RECORD_IDS_MAP[label.lower()]
 
 def encode_literal(value):
     separator = '%%'
@@ -199,7 +214,7 @@ def node_to_prov_element(node, bundle):
     #  bit from decode_json_container at <https://github.com/trungdong/prov/blob/master/src/prov/serializers/provjson.py>
     for attr_name, value in node.items():
         attributes = dict()
-        if not attr_name == 'id':
+        if not attr_name == ELEMENT_NODE_PRIMARY_ID:
             attr = (
                 PROV_ATTRIBUTES_ID_MAP[attr_name]
                 if attr_name in PROV_ATTRIBUTES_ID_MAP
@@ -219,7 +234,7 @@ def node_to_prov_element(node, bundle):
                 )
         else:
             rec_id = value
-        
+
     return bundle.new_record(rec_type, rec_id, attributes, other_attributes)
 
 def edge_to_prov_relation(edge, bundle):
@@ -333,12 +348,12 @@ def prov_relation_to_json(prov_element):
 '''
 def prov_element_to_node(prov_element):
     # parse attr to props
-    props = {}
+    props = dict()
     for attr in prov_element.attributes:
         props[encode_value(attr[0])] = encode_value(attr[1])
-        
+    labels = [node_label(prov_element), ELEMENT_NODE_PRIMARY_LABEL]
     return Node(
-        node_label(prov_element),
+        *labels,
         id = str_id(prov_element.identifier),
         **props
     )

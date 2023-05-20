@@ -1,17 +1,21 @@
 from flask import request, Response, Blueprint
 from prov.model import ProvDocument, ProvElement, ProvRelation
 from prov.graph import INFERRED_ELEMENT_CLASS
-from py2neo.data import Subgraph
+from py2neo.data import Subgraph, Node
 from py2neo.matching import NodeMatcher, RelationshipMatcher
 # from prov2neo.encode import encode_graph
 
 from extension import neo4j
 from utils import (
+    ELEMENT_NODE_PRIMARY_LABEL,
+    ELEMENT_NODE_PRIMARY_ID,
+    NS_NODE_LABEL,
     prov_element_to_node, 
     prov_relation_to_edge,
     node_to_prov_element,
     edge_to_prov_relation,
-    set_ns
+    get_ns_node,
+    set_document_ns
 )
 
 documents_bp = Blueprint('documents', __name__)
@@ -54,24 +58,19 @@ def prov_to_graph(prov_document):
     return graph
 
 
-def graph_to_prov(graph, nodes, edges):
-
-    prov_document = ProvDocument()
-
-    # add namespace
-    set_ns(graph, prov_document)
+def graph_to_prov(prov_document, nodes, edges):
 
     # then add element
-    for n in nodes:
-        if not n.has_label('_NsPrefDef'):
-            node_to_prov_element(n, prov_document)
+    for node in nodes:
+        if not node.has_label(NS_NODE_LABEL):
+            node_to_prov_element(node, prov_document)
+            
 
     # finally add relation
-    for e in edges:
-        edge_to_prov_relation(e, prov_document)
+    for edge in edges:
+        edge_to_prov_relation(edge, prov_document)
 
     return prov_document
-
 
 
 # Read
@@ -88,22 +87,25 @@ def get_document(doc_id):
         node_matcher = NodeMatcher(graph)
         relationship_matcher = RelationshipMatcher(graph)
 
-        node_match = node_matcher.match()
-        nodes = node_match.all()
+        nodes = node_matcher.match().all()
+        ns_node = node_matcher.match(NS_NODE_LABEL).first()
         relationships = relationship_matcher.match().all()
 
-        prov_document = graph_to_prov(graph, nodes, relationships)
+        prov_document = ProvDocument()
+        set_document_ns(ns_node, prov_document)
+
+        prov_document = graph_to_prov(prov_document, nodes, relationships)
 
         return Response(prov_document.serialize(), mimetype='application/json')
 
 # Get list
 @documents_bp.route('', methods=['GET'])
-def get_documents_list():
+def get_list_of_documents():
     return neo4j.get_all_dbs()
 
 # Create
 @documents_bp.route('/<string:doc_id>', methods=['PUT'])
-def create_document(doc_id):
+def upload_document(doc_id):
     # check if json
     content_type = request.headers.get('Content-Type')
     if (content_type != 'application/json'):
@@ -116,25 +118,23 @@ def create_document(doc_id):
     except:
         return "Document not valid", 400 
 
-    # translate ProvDocument to SubGraph  
+    # parse ProvDocument to SubGraph  
     s = prov_to_graph(prov_document)
 
     graph = neo4j.get_db(doc_id)
-    if(graph):
-        graph.delete_all()
-    else:
-        # create db and save doc
-        graph = neo4j.create_db(doc_id)
-    
-    graph.create(s)
-    # add ns
-    default_ns = prov_document.get_default_namespace()
-    if(default_ns):
-        graph.call.n10s.nsprefixes.add('default', default_ns._uri)
-    for ns in prov_document.get_registered_namespaces():
-        graph.call.n10s.nsprefixes.add(ns._prefix, ns._uri)
 
-    return "Document created", 201      
+    if not graph:
+        # create db and set ns
+        graph = neo4j.create_db(doc_id)
+        graph.create(get_ns_node(prov_document))
+    else:
+        # update ns if necessary
+        graph.push(get_ns_node(prov_document))
+
+    # merge on anonymous label _Node and property id
+    graph.merge(s, ELEMENT_NODE_PRIMARY_LABEL, ELEMENT_NODE_PRIMARY_ID)
+
+    return "Document uploaded", 201      
 
 # Delete
 @documents_bp.route('/<string:doc_id>', methods=['DELETE'])

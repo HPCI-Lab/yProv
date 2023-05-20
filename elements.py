@@ -5,11 +5,12 @@ from py2neo.matching import NodeMatcher
 
 from extension import neo4j
 from utils import (
+    NS_NODE_LABEL,
     json_to_prov_record,
     prov_element_to_node,
     node_to_prov_element,
     prov_element_to_json,
-    set_ns               
+    set_document_ns               
 )
 
 
@@ -29,9 +30,11 @@ def create_element(doc_id):
     except AssertionError:
         return "Document not found", 404
 
+    # create ProvDocument and add namespaces
     prov_document = ProvDocument()
-
-    set_ns(graph, prov_document)
+    node_matcher = NodeMatcher(graph)
+    ns_node = node_matcher.match(NS_NODE_LABEL).first()
+    set_document_ns(ns_node, prov_document)
 
     # parsing
     prov_element = json_to_prov_record(request.json, prov_document)
@@ -68,9 +71,11 @@ def get_element(doc_id, e_id):
         return "Entity not found", 404
     
 
+    # create ProvDocument and add namespaces
     prov_document = ProvDocument()
-
-    set_ns(graph, prov_document)
+    node_matcher = NodeMatcher(graph)
+    ns_node = node_matcher.match(NS_NODE_LABEL).first()
+    set_document_ns(ns_node, prov_document)
 
     prov_element = node_to_prov_element(node, prov_document)
 
@@ -95,10 +100,11 @@ def replace_element(doc_id, e_id):
     # node = node_matcher.match('Entity', id=e_id).first() 
     node = node_matcher.match(id=e_id).first()
 
-
+    # create ProvDocument and add namespaces
     prov_document = ProvDocument()
-
-    set_ns(graph, prov_document)
+    node_matcher = NodeMatcher(graph)
+    ns_node = node_matcher.match(NS_NODE_LABEL).first()
+    set_document_ns(ns_node, prov_document)
 
     # parsing
     prov_element = json_to_prov_record(request.json, prov_document)
