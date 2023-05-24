@@ -3,7 +3,7 @@ from flask import Blueprint, request
 from prov.model import ProvDocument
 from py2neo.matching import RelationshipMatcher, NodeMatcher
 
-from extension import neo4j
+from extensions import neo4j
 from .utils import (
     NS_NODE_LABEL,
     json_to_prov_record,

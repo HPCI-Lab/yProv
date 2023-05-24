@@ -1,7 +1,7 @@
 from prov.constants import *
 from prov.serializers.provjson import *
 
-from .constant import ELEMENT_NODE_PRIMARY_LABEL, ELEMENT_NODE_PRIMARY_ID, MAP_PROV_REL_TYPES
+from .constants import ELEMENT_NODE_PRIMARY_LABEL, ELEMENT_NODE_PRIMARY_ID, MAP_PROV_REL_TYPES
 
 
 def type_of_prov_node(node):

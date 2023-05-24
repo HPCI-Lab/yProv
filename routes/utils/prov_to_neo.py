@@ -1,7 +1,7 @@
 from py2neo.data import Node, Relationship
 from prov2neo.encode import encode_value, str_id, node_label, edge_label
 
-from .constant import ELEMENT_NODE_PRIMARY_LABEL
+from .constants import ELEMENT_NODE_PRIMARY_LABEL
 
 import uuid
 

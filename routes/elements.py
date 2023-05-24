@@ -3,7 +3,7 @@ from flask import Blueprint, request
 from prov.model import ProvDocument
 from py2neo.matching import NodeMatcher
 
-from extension import neo4j
+from extensions import neo4j
 
 from .utils import (
     NS_NODE_LABEL,
@@ -69,7 +69,7 @@ def get_element(doc_id, e_id):
         node = node_matcher.match('Entity', id=e_id).first() 
         assert(node)
     except AssertionError:
-        return "Entity not found", 404
+        return "Element not found", 404
     
 
     # create ProvDocument and add namespaces

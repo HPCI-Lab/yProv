@@ -4,7 +4,7 @@ from .prov_to_json import prov_element_to_json, prov_relation_to_json
 from .neo_to_prov import node_to_prov_element, edge_to_prov_relation
 from .prov_to_neo import prov_element_to_node, prov_relation_to_edge
 
-from .constant import *
+from .constants import *
 
 from py2neo import Node
 
