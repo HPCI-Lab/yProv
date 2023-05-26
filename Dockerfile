@@ -2,7 +2,9 @@ FROM python:3-alpine
 
 WORKDIR /app
 
-COPY . /app
+RUN python -m pip install --upgrade pip
+
+COPY . .
 
 RUN pip install -r requirements.txt
 
