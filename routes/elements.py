@@ -66,7 +66,7 @@ def get_element(doc_id, e_id):
     try:
         # match the node
         node_matcher = NodeMatcher(graph)
-        node = node_matcher.match('Entity', id=e_id).first() 
+        node = node_matcher.match(id=e_id).first() 
         assert(node)
     except AssertionError:
         return "Element not found", 404

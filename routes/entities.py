@@ -97,8 +97,8 @@ def replace_entity(doc_id, e_id):
 
     # match the node
     node_matcher = NodeMatcher(graph)
-    # node = node_matcher.match('Entity', id=e_id).first() 
-    node = node_matcher.match(id=e_id).first()
+    node = node_matcher.match('Entity', id=e_id).first() 
+    # node = node_matcher.match(id=e_id).first()
 
     # create ProvDocument and add namespaces
     prov_document = ProvDocument()
@@ -145,8 +145,8 @@ def delete_entity(doc_id, e_id):
     try:
         # match the node
         node_matcher = NodeMatcher(graph)
-        # node = node_matcher.match('Entity', id=e_id).first() 
-        node = node_matcher.match(id=e_id).first()
+        node = node_matcher.match('Entity', id=e_id).first() 
+        # node = node_matcher.match(id=e_id).first()
         assert(node)
     except AssertionError:
         return "Element not found", 404
