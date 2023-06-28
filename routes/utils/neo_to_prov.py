@@ -60,6 +60,9 @@ def edge_to_prov_relation(edge, bundle):
     rec_type_str = type(edge).__name__
     rec_type = PROV_RECORD_IDS_MAP[rec_type_str]    #e.g wasDerivedFrom': <QualifiedName: prov:Derivation>
 
+    # easy unique id
+    rec_id = '_id:' + str(edge.identity)
+    
     attributes = dict()
     other_attributes = []
 

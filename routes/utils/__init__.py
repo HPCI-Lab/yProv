@@ -19,13 +19,9 @@ def get_ns_node(prov_document):
     return ns_node
 
 def set_document_ns(ns_node, bundle):
-    default = False
     for attr_name, value in ns_node.items():
         if attr_name =='default':
             bundle.set_default_namespace(value)
             default=True
         else:
             bundle.add_namespace(attr_name, value)
-    if not default:
-        # for relationships
-        bundle.set_default_namespace('')

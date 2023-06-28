@@ -3,8 +3,6 @@ from prov2neo.encode import encode_value, str_id, node_label, edge_label
 
 from .constants import ELEMENT_NODE_PRIMARY_LABEL
 
-import uuid
-
 def prov_element_to_node(prov_element):
     # parse attr to props
     props = dict()
@@ -28,11 +26,6 @@ def prov_relation_to_edge(prov_relation, start_node, end_node):
     # extra attr
     for attr in prov_relation.extra_attributes:
         props[encode_value(attr[0])] = encode_value(attr[1])
-    
-    if not prov_relation.identifier:
-        props['id'] = str(uuid.uuid4())
-    else:
-        props['id'] = str(prov_relation.identifier)
         
     return Relationship(
         start_node,
