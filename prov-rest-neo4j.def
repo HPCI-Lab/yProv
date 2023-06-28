@@ -1,0 +1,23 @@
+Bootstrap: docker
+From: python:3-alpine
+Stage: build
+
+%files
+	./extensions .
+	./routes .
+	./app.py .
+	./requirements.txt
+
+%environment
+	export PORT=3000
+	export ADDRESS='localhost:7687'
+	export SCHEME='bolt'
+	export USER='neo4j'
+	export PASSWORD='password'
+
+%post
+	python -m pip install --upgrade pip
+	pip install -r ./requirements.txt
+
+%runscript
+	python ./app.py
