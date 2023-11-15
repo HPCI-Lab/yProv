@@ -1,3 +1,4 @@
+import click
 from flask import request, Response, Blueprint
 from prov.model import ProvDocument, ProvElement, ProvRelation
 from prov.graph import INFERRED_ELEMENT_CLASS
@@ -20,6 +21,7 @@ from .utils import (
 
 documents_bp = Blueprint('documents', __name__)
 
+
 def prov_to_graph(prov_document):
 
     graph = Subgraph()
@@ -31,13 +33,12 @@ def prov_to_graph(prov_document):
         node = prov_element_to_node(element)
         graph = graph | node        # union operator: add Node to the Subgraph
         node_map[element.identifier] = node
-    
 
     for relation in unified.get_records(ProvRelation):
         # taking the first two elements of a relation
         attr_pair_1, attr_pair_2 = relation.formal_attributes[:2]
         # only need the QualifiedName (i.e. the value of the attribute)
-        qn1, qn2 = attr_pair_1[1], attr_pair_2[1] # sono gli id degli elementi
+        qn1, qn2 = attr_pair_1[1], attr_pair_2[1]  # elements' id
 
         if qn1 and qn2:  # only proceed if both ends of the relation exist
             try:
@@ -64,7 +65,6 @@ def graph_to_prov(prov_document, nodes, edges):
     for node in nodes:
         if not node.has_label(NS_NODE_LABEL):
             node_to_prov_element(node, prov_document)
-            
 
     # finally add relation
     for edge in edges:
@@ -74,8 +74,11 @@ def graph_to_prov(prov_document, nodes, edges):
 
 
 # Read
-@documents_bp.route('/<string:doc_id>', methods=['GET'])
+@documents_bp.cli.command('get')
+@click.option("--doc_id", default=None)
 def get_document(doc_id):
+    if doc_id is None:
+        return neo4j.get_all_dbs()
     # get db and check if it exists
     graph = neo4j.get_db(doc_id)
 
@@ -98,17 +101,20 @@ def get_document(doc_id):
 
         return Response(prov_document.serialize(), mimetype='application/json')
 
-# Get list
-@documents_bp.route('', methods=['GET'])
-def get_list_of_documents():
-    return neo4j.get_all_dbs()
+
+# # Get list
+# @documents_bp.cli.command('get-all')
+# def get_list_of_documents():
+#     return neo4j.get_all_dbs()
+
 
 # Create
-@documents_bp.route('/<string:doc_id>', methods=['PUT'])
+@documents_bp.cli.command('create')
+@click.argument("doc_id")
 def upload_document(doc_id):
     # check if json
     content_type = request.headers.get('Content-Type')
-    if (content_type != 'application/json'):
+    if content_type != 'application/json':
         return 'Content-Type not supported!', 400
     
     try:
@@ -136,8 +142,10 @@ def upload_document(doc_id):
 
     return "Document uploaded", 201      
 
+
 # Delete
-@documents_bp.route('/<string:doc_id>', methods=['DELETE'])
+@documents_bp.cli.command('delete')
+@click.argument("doc_id")
 def delete_document(doc_id):
     db_list = []
     try:
@@ -145,7 +153,7 @@ def delete_document(doc_id):
     except:
         return "DB error", 500
     
-    if(doc_id in db_list):
+    if doc_id in db_list:
         try:
             neo4j.delete_db(doc_id)
         except:

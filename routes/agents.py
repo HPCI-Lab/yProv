@@ -1,3 +1,4 @@
+import click
 from flask import Blueprint, request
 
 from prov.model import ProvDocument
@@ -17,8 +18,10 @@ from .utils import (
 
 agents_bp = Blueprint('agents', __name__)
 
+
 # Create
-@agents_bp.route('', methods=['POST'])
+@agents_bp.cli.command('create')
+@click.argument("doc_id")
 def create_element(doc_id):
     try:
         graph = neo4j.get_db(doc_id)
@@ -50,7 +53,9 @@ def create_element(doc_id):
 
 
 # Read
-@agents_bp.route('/<string:e_id>', methods=['GET'])
+@agents_bp.cli.command('get')
+@click.argument("doc_id")
+@click.argument("e_id")
 def get_element(doc_id, e_id):
     try:
         graph = neo4j.get_db(doc_id)
@@ -68,10 +73,9 @@ def get_element(doc_id, e_id):
         # match the node
         node_matcher = NodeMatcher(graph)
         node = node_matcher.match('Agent', id=e_id).first() 
-        assert(node)
+        assert node
     except AssertionError:
         return "Element not found", 404
-    
 
     # create ProvDocument and add namespaces
     prov_document = ProvDocument()
@@ -83,8 +87,11 @@ def get_element(doc_id, e_id):
 
     return prov_element_to_json(prov_element)
 
+
 # Update
-@agents_bp.route('/<string:e_id>', methods=['PUT'])
+@agents_bp.cli.command('update')
+@click.argument("doc_id")
+@click.argument("e_id")
 def replace_element(doc_id, e_id):
     try:
         graph = neo4j.get_db(doc_id)
@@ -113,10 +120,10 @@ def replace_element(doc_id, e_id):
     input_node = prov_element_to_node(prov_element)
     
     # if exist then update else create
-    if(node):
+    if node:
         node.clear()
         for key, value in input_node.items():
-            node[key]=value
+            node[key] = value
 
         graph.push(node)
 
@@ -129,8 +136,11 @@ def replace_element(doc_id, e_id):
         
         return "Element created", 201
 
+
 # Delete
-@agents_bp.route('/<string:e_id>', methods=['DELETE'])
+@agents_bp.cli.command('delete')
+@click.argument("doc_id")
+@click.argument("e_id")
 def delete_element(doc_id, e_id):
     try:
         graph = neo4j.get_db(doc_id)
@@ -149,7 +159,7 @@ def delete_element(doc_id, e_id):
         node_matcher = NodeMatcher(graph)
         node = node_matcher.match('Agent', id=e_id).first() 
         # node = node_matcher.match(id=e_id).first()
-        assert(node)
+        assert node
     except AssertionError:
         return "Element not found", 404
     
