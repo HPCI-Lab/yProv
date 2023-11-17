@@ -1,3 +1,6 @@
+import json
+import os
+
 import click
 from flask import Blueprint, request
 from flask.cli import with_appcontext
@@ -22,18 +25,19 @@ activities_bp = Blueprint('activities', __name__)
 # Create
 @activities_bp.cli.command('create')
 @click.argument('doc_id')
+@click.argument("file", type=click.Path(exists=True))
 # @with_appcontext
-def create_element(doc_id):
+def create_element(doc_id, file):
     try:
         graph = neo4j.get_db(doc_id)
     except:
-        return "DB error", 500
+        raise SystemError("DB error")  # , 500
 
     # check if document is in neo4j 
     try:
         assert graph
     except AssertionError:
-        return "Document not found", 404
+        raise FileNotFoundError("Document not found")  # , 404
 
     # create ProvDocument and add namespaces
     prov_document = ProvDocument()
@@ -42,15 +46,25 @@ def create_element(doc_id):
     set_document_ns(ns_node, prov_document)
 
     # parsing
-    prov_element = json_to_prov_record(request.json, prov_document)
+    if not os.path.isfile(file):
+        raise FileNotFoundError("Please pass a valid path!")
+
+    with open(file, 'r') as fp:
+        if file.read(2) != '[]' and file.seek(0).read(2) != '{}':
+            file.seek(0)
+            data = json.load(fp)
+        else:
+            raise Exception("File must be not empty!")
+    
+    prov_element = json_to_prov_record(data, prov_document)
     node = prov_element_to_node(prov_element)
 
     try:
         graph.create(node)
     except:
-        return "DB error", 500
+        raise SystemError("DB error")  # , 500
 
-    return "Element created", 201
+    print("Element created")  # , 201
 
 
 # Read
@@ -61,22 +75,22 @@ def get_element(doc_id, e_id):
     try:
         graph = neo4j.get_db(doc_id)
     except:
-        return "DB error", 500
+        raise SystemError("DB error")  # , 500
 
     # check if document is in neo4j 
     try:
         assert graph
     except AssertionError:
-        return "Document not found", 404
+        raise FileNotFoundError("Document not found")  # , 404
 
     # check if element is in document 
     try:
         # match the node
         node_matcher = NodeMatcher(graph)
         node = node_matcher.match('Activity', id=e_id).first()
-        assert (node)
+        assert node
     except AssertionError:
-        return "Element not found", 404
+        raise LookupError("Element not found")  # , 404
 
     # create ProvDocument and add namespaces
     prov_document = ProvDocument()
@@ -86,24 +100,25 @@ def get_element(doc_id, e_id):
 
     prov_element = node_to_prov_element(node, prov_document)
 
-    return prov_element_to_json(prov_element)
+    print(prov_element_to_json(prov_element))
 
 
 # Update
 @activities_bp.cli.command('update')
 @click.argument('doc_id')
 @click.argument('e_id')
-def replace_element(doc_id, e_id):
+@click.argument("file", type=click.Path(exists=True))
+def replace_element(doc_id, e_id, file):
     try:
         graph = neo4j.get_db(doc_id)
     except:
-        return "DB error", 500
+        raise SystemError("DB error")  # , 500
 
     # check if document is in neo4j 
     try:
         assert graph
     except AssertionError:
-        return "Document not found", 404
+        raise FileNotFoundError("Document not found")  # , 404
 
     # match the node
     node_matcher = NodeMatcher(graph)
@@ -117,7 +132,17 @@ def replace_element(doc_id, e_id):
     set_document_ns(ns_node, prov_document)
 
     # parsing
-    prov_element = json_to_prov_record(request.json, prov_document)
+    if not os.path.isfile(file):
+        raise FileNotFoundError("Please pass a valid path!")
+
+    with open(file, 'r') as fp:
+        if file.read(2) != '[]' and file.seek(0).read(2) != '{}':
+            file.seek(0)
+            data = json.load(fp)
+        else:
+            raise Exception("File must be not empty!")
+    
+    prov_element = json_to_prov_record(data, prov_document)
     input_node = prov_element_to_node(prov_element)
 
     # if exist then update else create
@@ -128,14 +153,14 @@ def replace_element(doc_id, e_id):
 
         graph.push(node)
 
-        return "Element updated", 200
+        print("Element updated")  # , 200
     else:
         try:
             graph.create(input_node)
         except:
-            return "DB error", 500
+            raise SystemError("DB error")  # , 500
 
-        return "Element created", 201
+        print("Element created")  # , 201
 
 
 # Delete
@@ -146,13 +171,13 @@ def delete_element(doc_id, e_id):
     try:
         graph = neo4j.get_db(doc_id)
     except:
-        return "DB error", 500
+        raise SystemError("DB error")  # , 500
 
     # check if document is in neo4j 
     try:
         assert graph
     except AssertionError:
-        return "Document not found", 404
+        raise FileNotFoundError("Document not found")  # , 404
 
     # check if element is in document 
     try:
@@ -162,11 +187,11 @@ def delete_element(doc_id, e_id):
         # node = node_matcher.match(id=e_id).first()
         assert node
     except AssertionError:
-        return "Element not found", 404
+        raise LookupError("Element not found")  # , 404
 
     try:
         graph.delete(node)
     except AssertionError:
-        return "DB error", 500
+        raise SystemError("DB error")  # , 500
 
-    return "Element deleted", 200
+    print("Element deleted")  # , 200

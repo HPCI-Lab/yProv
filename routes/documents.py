@@ -1,3 +1,6 @@
+import json
+import os
+
 import click
 from flask import request, Response, Blueprint
 from prov.model import ProvDocument, ProvElement, ProvRelation
@@ -78,51 +81,67 @@ def graph_to_prov(prov_document, nodes, edges):
 @click.option("--doc_id", default=None)
 def get_document(doc_id):
     if doc_id is None:
-        return neo4j.get_all_dbs()
-    # get db and check if it exists
-    graph = neo4j.get_db(doc_id)
-
-    try:
-        assert graph
-    except AssertionError:
-        return "Document not found", 404
+        print(neo4j.get_all_dbs)
     else:
-        node_matcher = NodeMatcher(graph)
-        relationship_matcher = RelationshipMatcher(graph)
-
-        nodes = node_matcher.match().all()
-        ns_node = node_matcher.match(NS_NODE_LABEL).first()
-        relationships = relationship_matcher.match().all()
-
-        prov_document = ProvDocument()
-        set_document_ns(ns_node, prov_document)
-
-        prov_document = graph_to_prov(prov_document, nodes, relationships)
-
-        return Response(prov_document.serialize(), mimetype='application/json')
+        # get db and check if it exists
+        graph = neo4j.get_db(doc_id)
+    
+        try:
+            assert graph
+        except AssertionError:
+            raise FileNotFoundError("Document not found")  # , 404
+        else:
+            node_matcher = NodeMatcher(graph)
+            relationship_matcher = RelationshipMatcher(graph)
+    
+            nodes = node_matcher.match().all()
+            ns_node = node_matcher.match(NS_NODE_LABEL).first()
+            relationships = relationship_matcher.match().all()
+    
+            prov_document = ProvDocument()
+            set_document_ns(ns_node, prov_document)
+    
+            prov_document = graph_to_prov(prov_document, nodes, relationships)
+    
+            print(prov_document)
 
 
 # # Get list
 # @documents_bp.cli.command('get-all')
 # def get_list_of_documents():
-#     return neo4j.get_all_dbs()
+#     print(eo4j.)  # get_all_dbs()
 
 
 # Create
 @documents_bp.cli.command('create')
 @click.argument("doc_id")
-def upload_document(doc_id):
+@click.argument("file", type=click.Path(exists=True))
+def upload_document(doc_id, file):
     # check if json
-    content_type = request.headers.get('Content-Type')
-    if content_type != 'application/json':
-        return 'Content-Type not supported!', 400
-    
+    if not os.path.isfile(file):
+        raise FileNotFoundError("Please pass a valid path!")
+
+    with open(file, 'r') as fp:
+        if file.read(2) != '[]' and file.seek(0).read(2) != '{}':
+            file.seek(0)
+            data = json.load(fp)
+        else:
+            raise Exception("File must be not empty!")
     try:
-        # get the ProvDocument
-        data = request.data
         prov_document = ProvDocument.deserialize(content=data)
     except:
-        return "Document not valid", 400 
+        raise SyntaxError("Document not valid!")
+    
+    # content_type = request.headers.get('Content-Type')
+    # if content_type != 'application/json':
+    #     print('Content-Type not supported!')  # , 400
+    # 
+    # try:
+    #     # get the ProvDocument
+    #     data = request.data
+    #     prov_document = ProvDocument.deserialize(content=data)
+    # except:
+    #     print("Document not valid")  # , 400
 
     # parse ProvDocument to SubGraph  
     s = prov_to_graph(prov_document)
@@ -140,7 +159,7 @@ def upload_document(doc_id):
     # merge on anonymous label _Node and property id
     graph.merge(s, ELEMENT_NODE_PRIMARY_LABEL, ELEMENT_NODE_PRIMARY_ID)
 
-    return "Document uploaded", 201      
+    print("Document uploaded")  # , 201
 
 
 # Delete
@@ -151,14 +170,16 @@ def delete_document(doc_id):
     try:
         db_list = neo4j.get_all_dbs()
     except:
-        return "DB error", 500
+        raise SystemError("DB error")  # , 500
     
     if doc_id in db_list:
         try:
             neo4j.delete_db(doc_id)
         except:
-            return "DB error", 500
+            raise SystemError("DB error")  # , 500
         
-        return "Document deleted", 200
+        print("Document deleted")  # , 200
     else:
-        return "Document not found", 404
+        raise FileNotFoundError("Document not found")  # , 404
+        # print("Document not found")
+        # exit()
