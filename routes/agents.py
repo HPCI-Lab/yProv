@@ -47,13 +47,9 @@ def create_element(doc_id, file):
         raise FileNotFoundError("Please pass a valid path!")
 
     with open(file, 'r') as fp:
-        if file.read(2) != '[]' and file.seek(0).read(2) != '{}':
-            file.seek(0)
-            data = json.load(fp)
-        else:
-            raise Exception("File must be not empty!")
+        data = json.load(fp)
 
-    prov_element = json_to_prov_record(request.json, prov_document)
+    prov_element = json_to_prov_record(data, prov_document)
     node = prov_element_to_node(prov_element)
 
     try:
@@ -133,11 +129,7 @@ def replace_element(doc_id, e_id, file):
         raise FileNotFoundError("Please pass a valid path!")
 
     with open(file, 'r') as fp:
-        if file.read(2) != '[]' and file.seek(0).read(2) != '{}':
-            file.seek(0)
-            data = json.load(fp)
-        else:
-            raise Exception("File must be not empty!")
+        data = json.load(fp)
 
     prov_element = json_to_prov_record(data, prov_document)
     input_node = prov_element_to_node(prov_element)

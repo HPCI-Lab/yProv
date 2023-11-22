@@ -81,7 +81,7 @@ def graph_to_prov(prov_document, nodes, edges):
 @click.option("--doc_id", default=None)
 def get_document(doc_id):
     if doc_id is None:
-        print(neo4j.get_all_dbs)
+        print(neo4j.get_all_dbs())
     else:
         # get db and check if it exists
         graph = neo4j.get_db(doc_id)
@@ -103,7 +103,7 @@ def get_document(doc_id):
     
             prov_document = graph_to_prov(prov_document, nodes, relationships)
     
-            print(prov_document)
+            print(prov_document.serialize())
 
 
 # # Get list
@@ -122,11 +122,8 @@ def upload_document(doc_id, file):
         raise FileNotFoundError("Please pass a valid path!")
 
     with open(file, 'r') as fp:
-        if file.read(2) != '[]' and file.seek(0).read(2) != '{}':
-            file.seek(0)
-            data = json.load(fp)
-        else:
-            raise Exception("File must be not empty!")
+        data = json.load(fp)
+
     try:
         prov_document = ProvDocument.deserialize(content=data)
     except:
