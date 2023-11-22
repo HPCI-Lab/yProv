@@ -1,4 +1,5 @@
 import os
+from sys import exit
 
 import click
 from flask import Blueprint, request
