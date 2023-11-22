@@ -28,13 +28,15 @@ def create_element(doc_id, file):
     try:
         graph = neo4j.get_db(doc_id)
     except:
-        raise SystemError("DB error")  # , 500
+        print("DB error")  # , 500
+        exit()
 
     # check if document is in neo4j 
     try:
         assert graph
     except AssertionError:
-        raise FileNotFoundError("Document not found")  # , 404
+        print("Document not found")  # , 404
+        exit()
 
     # create ProvDocument and add namespaces
     prov_document = ProvDocument()
@@ -44,7 +46,8 @@ def create_element(doc_id, file):
 
     # parsing
     if not os.path.isfile(file):
-        raise FileNotFoundError("Please pass a valid path!")
+        print("Please pass a valid path!")
+        exit()
 
     with open(file, 'r') as fp:
         data = json.load(fp)
@@ -55,7 +58,8 @@ def create_element(doc_id, file):
     try:
         graph.create(node)
     except:
-        raise SystemError("DB error")  # , 500
+        print("DB error")  # , 500
+        exit()
 
     print("Element created")  # , 201
 
@@ -68,13 +72,15 @@ def get_element(doc_id, e_id):
     try:
         graph = neo4j.get_db(doc_id)
     except:
-        raise SystemError("DB error")  # , 500
+        print("DB error")  # , 500
+        exit()
 
     # check if document is in neo4j 
     try:
         assert graph
     except AssertionError:
-        raise FileNotFoundError("Document not found")  # , 404
+        print("Document not found")  # , 404
+        exit()
 
     # check if element is in document 
     try:
@@ -83,7 +89,8 @@ def get_element(doc_id, e_id):
         node = node_matcher.match('Agent', id=e_id).first()
         assert node
     except AssertionError:
-        raise LookupError("Element not found")  # , 404
+        print("Element not found")  # , 404
+        exit()
 
     # create ProvDocument and add namespaces
     prov_document = ProvDocument()
@@ -105,13 +112,15 @@ def replace_element(doc_id, e_id, file):
     try:
         graph = neo4j.get_db(doc_id)
     except:
-        raise SystemError("DB error")  # , 500
+        print("DB error")  # , 500
+        exit()
 
     # check if document is in neo4j 
     try:
         assert graph
     except AssertionError:
-        raise FileNotFoundError("Document not found")  # , 404
+        print("Document not found")  # , 404
+        exit()
 
     # match the node
     node_matcher = NodeMatcher(graph)
@@ -126,7 +135,8 @@ def replace_element(doc_id, e_id, file):
 
     # parsing
     if not os.path.isfile(file):
-        raise FileNotFoundError("Please pass a valid path!")
+        print("Please pass a valid path!")
+        exit()
 
     with open(file, 'r') as fp:
         data = json.load(fp)
@@ -147,7 +157,8 @@ def replace_element(doc_id, e_id, file):
         try:
             graph.create(input_node)
         except:
-            raise SystemError("DB error")  # print)  # (500
+            print("DB error")  # print)  # (500
+            exit()
 
         print("Element created")  # , 201
 
@@ -160,13 +171,15 @@ def delete_element(doc_id, e_id):
     try:
         graph = neo4j.get_db(doc_id)
     except:
-        raise SystemError ("DB error")  # , 500
+        print ("DB error")  # , 500
+        exit()
 
     # check if document is in neo4j
     try:
         assert graph
     except AssertionError:
-        raise FileNotFoundError("Document not found")  # , 404
+        print("Document not found")  # , 404
+        exit()
 
     # check if element is in document 
     try:
@@ -176,11 +189,13 @@ def delete_element(doc_id, e_id):
         # node = node_matcher.match(id=e_id).first()
         assert node
     except AssertionError:
-        raise LookupError("Element not found")  # , 404
+        print("Element not found")  # , 404
+        exit()
 
     try:
         graph.delete(node)
     except AssertionError:
-        raise SystemError("DB error")  # , 500
+        print("DB error")  # , 500
+        exit()
 
     print("Element deleted")  # , 200

@@ -89,7 +89,8 @@ def get_document(doc_id):
         try:
             assert graph
         except AssertionError:
-            raise FileNotFoundError("Document not found")  # , 404
+            print("Document not found")  # , 404
+            exit()
         else:
             node_matcher = NodeMatcher(graph)
             relationship_matcher = RelationshipMatcher(graph)
@@ -119,15 +120,17 @@ def get_document(doc_id):
 def upload_document(doc_id, file):
     # check if json
     if not os.path.isfile(file):
-        raise FileNotFoundError("Please pass a valid path!")
+        print("Please pass a valid path!")
+        exit()
 
     with open(file, 'r') as fp:
-        data = json.load(fp)
+        data = fp.read()
 
     try:
         prov_document = ProvDocument.deserialize(content=data)
     except:
-        raise SyntaxError("Document not valid!")
+        print("Document not valid!")
+        exit()
     
     # content_type = request.headers.get('Content-Type')
     # if content_type != 'application/json':
@@ -167,16 +170,17 @@ def delete_document(doc_id):
     try:
         db_list = neo4j.get_all_dbs()
     except:
-        raise SystemError("DB error")  # , 500
+        print("DB error")  # , 500
+        exit()
     
     if doc_id in db_list:
         try:
             neo4j.delete_db(doc_id)
         except:
-            raise SystemError("DB error")  # , 500
+            print("DB error")  # , 500
+            exit()
         
         print("Document deleted")  # , 200
     else:
-        raise FileNotFoundError("Document not found")  # , 404
-        # print("Document not found")
-        # exit()
+        print("Document not found")  # , 404
+        exit()
