@@ -1,5 +1,6 @@
 import json
 import os
+from sys import exit
 
 import click
 from flask import request, Response, Blueprint
