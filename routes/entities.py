@@ -1,8 +1,8 @@
 from flask import Blueprint, request
-
+import click
 from prov.model import ProvDocument
 from py2neo.matching import NodeMatcher
-
+import json,sys
 from extensions import neo4j
 
 from .utils import (
@@ -18,18 +18,22 @@ from .utils import (
 entities_bp = Blueprint('entities', __name__)
 
 # Create
-@entities_bp.route('', methods=['POST'])
-def create_entity(doc_id):
+@entities_bp.cli.command('create')
+@click.argument("doc_id")
+@click.argument("file", type=click.Path(exists=True))
+def create_entity(doc_id,file):
     try:
         graph = neo4j.get_db(doc_id)
     except:
-        return "DB error", 500
+        print("DB error")
+        sys.exit()
 
     # check if document is in neo4j 
     try:
         assert graph
     except AssertionError:
-        return "Document not found", 404
+        print("Document not found")
+        sys.exit()   
 
     # create ProvDocument and add namespaces
     prov_document = ProvDocument()
@@ -38,29 +42,39 @@ def create_entity(doc_id):
     set_document_ns(ns_node, prov_document)
 
     # parsing
-    prov_element = json_to_prov_record(request.json, prov_document)
+    with open(file,"r") as fp:
+        data = json.load(fp)
+
+    #prov_element = json_to_prov_record(request.json, prov_document)
+    prov_element = json_to_prov_record(data, prov_document)
     node = prov_element_to_node(prov_element)
 
     try:
         graph.create(node)
     except:
-        return "DB error", 500
+        print("DB error")
+        sys.exit()
 
-    return "Entity created", 201
+    print("Element created")
 
 # Read
-@entities_bp.route('/<string:e_id>', methods=['GET'])
+#@entities_bp.route('/<string:e_id>', methods=['GET'])
+@entities_bp.cli.command('get')
+@click.argument("doc_id")
+@click.argument("e_id")
 def get_entity(doc_id, e_id):
     try:
         graph = neo4j.get_db(doc_id)
     except:
-        return "DB error", 500
+        print("DB error")
+        sys.exit()
 
     # check if document is in neo4j 
     try:
         assert graph
     except AssertionError:
-        return "Document not found", 404
+        print("Document not found")
+        sys.exit()
 
     # check if element is in document 
     try:
@@ -69,7 +83,8 @@ def get_entity(doc_id, e_id):
         node = node_matcher.match('Entity', id=e_id).first() 
         assert(node)
     except AssertionError:
-        return "Entity not found", 404
+        print("Entity not found")
+        sys.exit()
     
     # create ProvDocument and add namespaces
     prov_document = ProvDocument()
@@ -79,21 +94,26 @@ def get_entity(doc_id, e_id):
 
     prov_element = node_to_prov_element(node, prov_document)
 
-    return prov_element_to_json(prov_element)
+    print(prov_element_to_json(prov_element))
 
 # Update
-@entities_bp.route('/<string:e_id>', methods=['PUT'])
-def replace_entity(doc_id, e_id):
+@entities_bp.cli.command('update')
+@click.argument("doc_id")
+@click.argument("e_id")
+@click.argument("file")
+def replace_entity(doc_id, e_id,file):
     try:
         graph = neo4j.get_db(doc_id)
     except:
-        return "DB error", 500
+       print("DB error")
+       sys.exit()
 
     # check if document is in neo4j 
     try:
         assert graph
     except AssertionError:
-        return "Document not found", 404
+        print("Document not found")
+        sys.exit()
 
     # match the node
     node_matcher = NodeMatcher(graph)
@@ -107,7 +127,10 @@ def replace_entity(doc_id, e_id):
     set_document_ns(ns_node, prov_document)
 
     # parsing
-    prov_element = json_to_prov_record(request.json, prov_document)
+    with open(file,"r") as fp:
+        data = json.load(fp)
+
+    prov_element = json_to_prov_record(data, prov_document)
     input_node = prov_element_to_node(prov_element)
     
     # if exist then update else create
@@ -118,28 +141,33 @@ def replace_entity(doc_id, e_id):
 
         graph.push(node)
 
-        return "Entity updated", 200
+        print("Entity updated")
     else:
         try:
             graph.create(input_node)
         except:
-            return "DB error", 500
+            print("DB error")
+            sys.exit()
         
-        return "Entity created", 201
+        print("Entity created")
 
 # Delete
-@entities_bp.route('/<string:e_id>', methods=['DELETE'])
+@entities_bp.cli.command('delete')
+@click.argument("doc_id")
+@click.argument("e_id")
 def delete_entity(doc_id, e_id):
     try:
         graph = neo4j.get_db(doc_id)
     except:
-        return "DB error", 500
+        print("DB error")
+        sys.exit()
 
     # check if document is in neo4j 
     try:
         assert graph
     except AssertionError:
-        return "Document not found", 404
+        print("Document not found")
+        sys.exit()
 
     # check if element is in document 
     try:
@@ -149,11 +177,13 @@ def delete_entity(doc_id, e_id):
         # node = node_matcher.match(id=e_id).first()
         assert(node)
     except AssertionError:
-        return "Element not found", 404
+        print("Element not found")
+        sys.exit()
     
     try:
         graph.delete(node)
     except AssertionError:
-        return "DB error", 500
+        print("DB error")
+        sys.exit()
 
-    return "Element deleted", 200
+    print("Element deleted")

@@ -1,3 +1,8 @@
+import json
+import os
+from sys import exit
+
+import click
 from flask import request, Response, Blueprint
 from prov.model import ProvDocument, ProvElement, ProvRelation
 from prov.graph import INFERRED_ELEMENT_CLASS
@@ -20,6 +25,7 @@ from .utils import (
 
 documents_bp = Blueprint('documents', __name__)
 
+
 def prov_to_graph(prov_document):
 
     graph = Subgraph()
@@ -31,13 +37,12 @@ def prov_to_graph(prov_document):
         node = prov_element_to_node(element)
         graph = graph | node        # union operator: add Node to the Subgraph
         node_map[element.identifier] = node
-    
 
     for relation in unified.get_records(ProvRelation):
         # taking the first two elements of a relation
         attr_pair_1, attr_pair_2 = relation.formal_attributes[:2]
         # only need the QualifiedName (i.e. the value of the attribute)
-        qn1, qn2 = attr_pair_1[1], attr_pair_2[1] # sono gli id degli elementi
+        qn1, qn2 = attr_pair_1[1], attr_pair_2[1]  # elements' id
 
         if qn1 and qn2:  # only proceed if both ends of the relation exist
             try:
@@ -64,7 +69,6 @@ def graph_to_prov(prov_document, nodes, edges):
     for node in nodes:
         if not node.has_label(NS_NODE_LABEL):
             node_to_prov_element(node, prov_document)
-            
 
     # finally add relation
     for edge in edges:
@@ -74,49 +78,71 @@ def graph_to_prov(prov_document, nodes, edges):
 
 
 # Read
-@documents_bp.route('/<string:doc_id>', methods=['GET'])
+@documents_bp.cli.command('get')
+@click.option("--doc_id", default=None)
 def get_document(doc_id):
-    # get db and check if it exists
-    graph = neo4j.get_db(doc_id)
-
-    try:
-        assert graph
-    except AssertionError:
-        return "Document not found", 404
+    if doc_id is None:
+        print(neo4j.get_all_dbs())
     else:
-        node_matcher = NodeMatcher(graph)
-        relationship_matcher = RelationshipMatcher(graph)
+        # get db and check if it exists
+        graph = neo4j.get_db(doc_id)
+    
+        try:
+            assert graph
+        except AssertionError:
+            print("Document not found")  # , 404
+            exit()
+        else:
+            node_matcher = NodeMatcher(graph)
+            relationship_matcher = RelationshipMatcher(graph)
+    
+            nodes = node_matcher.match().all()
+            ns_node = node_matcher.match(NS_NODE_LABEL).first()
+            relationships = relationship_matcher.match().all()
+    
+            prov_document = ProvDocument()
+            set_document_ns(ns_node, prov_document)
+    
+            prov_document = graph_to_prov(prov_document, nodes, relationships)
+    
+            print(prov_document.serialize())
 
-        nodes = node_matcher.match().all()
-        ns_node = node_matcher.match(NS_NODE_LABEL).first()
-        relationships = relationship_matcher.match().all()
 
-        prov_document = ProvDocument()
-        set_document_ns(ns_node, prov_document)
+# # Get list
+# @documents_bp.cli.command('get-all')
+# def get_list_of_documents():
+#     print(eo4j.)  # get_all_dbs()
 
-        prov_document = graph_to_prov(prov_document, nodes, relationships)
-
-        return Response(prov_document.serialize(), mimetype='application/json')
-
-# Get list
-@documents_bp.route('', methods=['GET'])
-def get_list_of_documents():
-    return neo4j.get_all_dbs()
 
 # Create
-@documents_bp.route('/<string:doc_id>', methods=['PUT'])
-def upload_document(doc_id):
+@documents_bp.cli.command('create')
+@click.argument("doc_id")
+@click.argument("file", type=click.Path(exists=True))
+def upload_document(doc_id, file):
     # check if json
-    content_type = request.headers.get('Content-Type')
-    if (content_type != 'application/json'):
-        return 'Content-Type not supported!', 400
-    
+    if not os.path.isfile(file):
+        print("Please pass a valid path!")
+        exit()
+
+    with open(file, 'r') as fp:
+        data = fp.read()
+
     try:
-        # get the ProvDocument
-        data = request.data
         prov_document = ProvDocument.deserialize(content=data)
     except:
-        return "Document not valid", 400 
+        print("Document not valid!")
+        exit()
+    
+    # content_type = request.headers.get('Content-Type')
+    # if content_type != 'application/json':
+    #     print('Content-Type not supported!')  # , 400
+    # 
+    # try:
+    #     # get the ProvDocument
+    #     data = request.data
+    #     prov_document = ProvDocument.deserialize(content=data)
+    # except:
+    #     print("Document not valid")  # , 400
 
     # parse ProvDocument to SubGraph  
     s = prov_to_graph(prov_document)
@@ -134,23 +160,28 @@ def upload_document(doc_id):
     # merge on anonymous label _Node and property id
     graph.merge(s, ELEMENT_NODE_PRIMARY_LABEL, ELEMENT_NODE_PRIMARY_ID)
 
-    return "Document uploaded", 201      
+    print("Document uploaded")  # , 201
+
 
 # Delete
-@documents_bp.route('/<string:doc_id>', methods=['DELETE'])
+@documents_bp.cli.command('delete')
+@click.argument("doc_id")
 def delete_document(doc_id):
     db_list = []
     try:
         db_list = neo4j.get_all_dbs()
     except:
-        return "DB error", 500
+        print("DB error")  # , 500
+        exit()
     
-    if(doc_id in db_list):
+    if doc_id in db_list:
         try:
             neo4j.delete_db(doc_id)
         except:
-            return "DB error", 500
+            print("DB error")  # , 500
+            exit()
         
-        return "Document deleted", 200
+        print("Document deleted")  # , 200
     else:
-        return "Document not found", 404
+        print("Document not found")  # , 404
+        exit()
