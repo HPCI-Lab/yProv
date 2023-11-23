@@ -54,8 +54,8 @@ The generic usage is:
 flask RESOURCE COMMAND [ARGS]
 ```
 
-where RESOURCE = ["activities", "agents", "documents", "elements", "entities", "relations"]
-and COMMAND = ["create","delete","get","update"]
+where ```RESOURCE = ["activities", "agents", "documents", "elements", "entities", "relations"]```
+and ```COMMAND = ["create","delete","get","update"]```
 
 To get further information about a specific resource (e.g., documents) and command (e.g., get), you can simply run
 
