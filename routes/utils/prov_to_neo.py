@@ -18,7 +18,9 @@ def prov_element_to_node(prov_element):
 def prov_relation_to_edge(prov_relation, start_node, end_node):
     # parse attr to props
     props = {}
-
+  
+    relation_id = prov_relation.identifier
+ 
     # skip first two attrs (e.g. the two nodes)
     for attr in prov_relation.formal_attributes[2:]:
         props[encode_value(attr[0])] = encode_value(attr[1])
@@ -26,7 +28,9 @@ def prov_relation_to_edge(prov_relation, start_node, end_node):
     # extra attr
     for attr in prov_relation.extra_attributes:
         props[encode_value(attr[0])] = encode_value(attr[1])
-        
+   
+    props[encode_value("id")] = encode_value(relation_id)
+ 
     return Relationship(
         start_node,
         edge_label(prov_relation),
