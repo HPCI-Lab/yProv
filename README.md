@@ -43,7 +43,27 @@
 
 -------
 
-## CLI Service Command list
+## yProv Command Line Interface (CLI)
+
+The yProv CLI provides a set of commands, which are basically Python wrappers to the RESTful API calls designed for the yProv service.
+
+Five classes of resources have been identified, namely document, entity, activity, agent and relation. For each, it is possible to perform the CRUD operations: Create, Read, Update, Delete.
+
+The generic usage is:
+```
+flask RESOURCE COMMAND [ARGS]
+```
+
+where RESOURCE = ["activities", "agents", "documents", "elements", "entities", "relations"]
+and COMMAND = ["create","delete","get","update"]
+
+To get further information about a specific resource (e.g., documents) and command (e.g., get), you can simply run
+
+```
+flask documents get --help
+```
+
+Here is the full list of available commands and how to use them. 
 
 ### Documents
 - Get all documents
