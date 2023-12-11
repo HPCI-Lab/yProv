@@ -8,7 +8,7 @@ COPY . .
 
 RUN pip install -r requirements.txt
 
-ENV PORT=3000 ADDRESS='host.docker.internal:7687' SCHEME='bolt' USER='neo4j' PASSWORD='password'
+ENV PORT=3000 ADDRESS='db:7687' USER='neo4j' PASSWORD='password'
 
 EXPOSE 3000
 
