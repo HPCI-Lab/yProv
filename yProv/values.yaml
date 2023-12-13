@@ -5,7 +5,7 @@ web:
     port: 3000
     targetPort: 3000
   service: web
-  image: jclock98/prov-rest-neo4j
+  image: hpci/yprov-im:latest
 
 db:
   service: db

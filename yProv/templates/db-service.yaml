@@ -12,7 +12,9 @@ spec:
     - port: {{ .Values.db.ports.port2.port }}
       targetPort: {{ .Values.db.ports.port2.targetPort }}
       name: {{ .Values.db.ports.port2.name }}
+      nodePort: {{ .Values.db.ports.port2.port }}
   selector:
     service: {{ .Values.db.service }}
+  type: NodePort
 status:
   loadBalancer: {}

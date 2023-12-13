@@ -3,7 +3,6 @@ import os
 from py2neo import ClientError, DatabaseError, GraphService
 
 ADDRESS = os.environ['ADDRESS']
-# SCHEME = os.environ['SCHEME']
 USER = os.environ['USER']
 PASSWORD = os.environ['PASSWORD']
 
@@ -21,7 +20,6 @@ class Neo4j:
         try:
             self.service = GraphService(
                 address=ADDRESS,
-                # scheme=SCHEME,
                 user=USER,
                 password=PASSWORD
             )
