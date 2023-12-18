@@ -15,6 +15,10 @@ PORT = os.environ['PORT']
 # create app
 app = Flask(__name__)
 
+@app.route('/')
+def root_route():
+    return "I'm active", 200
+    
 # load the endpoints
 PRE = "/api/v0/"
 app.register_blueprint(documents_bp, url_prefix=PRE+'documents')
