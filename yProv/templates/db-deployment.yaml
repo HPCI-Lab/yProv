@@ -23,6 +23,8 @@ spec:
               value: {{ .Values.db.env.license.value }}
             - name: {{ .Values.db.env.auth.name }}
               value: {{ .Values.db.env.auth.value }}
+            - name: {{ .Values.db.env.plugins.name }}
+              value: {{ .Values.db.env.plugins.value }}
           image: {{ .Values.db.image }}
           livenessProbe:
             exec:

@@ -29,6 +29,11 @@ db:
     license:
       name: NEO4J_ACCEPT_LICENSE_AGREEMENT
       value: eval
+    plugins:
+      name: NEO4J_PLUGINS
+      value: '["graph-data-science"]'
+  config:
+    dbms.security.procedures.unrestricted: "gds.*" # added following "https://neo4j.com/docs/operations-manual/current/kubernetes/plugins/#_install_gds_community_edition_ce"
 
 neo4j:
   service: "neo4j-data"
