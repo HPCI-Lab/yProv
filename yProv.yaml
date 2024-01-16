@@ -25,6 +25,10 @@ topology_template:
       type: string
       description: Neo4j license type
       default: eval
+    neo4j_plugins:
+      type: string
+      description: neo4j plugins to be enabled
+      default: '["graph-data-science"]'
     storage_dimension:
       type: string
       description: Neo4j storage capacity
@@ -43,6 +47,8 @@ topology_template:
           db.env.auth.value: { get_input: neo4j_auth }
           db.env.license.name: NEO4J_ACCEPT_LICENSE_AGREEMENT
           db.env.license.value: { get_input: neo4j_license }
+          db.env.plugins.name: NEO4J_PLUGINS
+          db.env.plugins.value: { get_input: neo4j_plugins }
           neo4j.resources.requirements.storage: { get_input: storage_dimension }
       requirements:
         - host: lrms_front_end
