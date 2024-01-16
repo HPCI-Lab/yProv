@@ -9,6 +9,10 @@ RUN apt-get update
 RUN echo "neo4j-enterprise neo4j/accept-license select Accept evaluation license" | debconf-set-selections
 RUN apt-get -y install neo4j-enterprise=1:5.15.0
 
+RUN apt-get install -y unzip
+RUN wget https://graphdatascience.ninja/neo4j-graph-data-science-2.5.6.zip
+RUN unzip neo4j-graph-data-science-2.5.6.zip
+
 EXPOSE 7474 7473 7687
 
 WORKDIR /app
