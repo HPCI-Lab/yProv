@@ -13,13 +13,4 @@ while [ $status_code -ne 200 ]; do
     status_code=$(curl -o /dev/null -s -w "%{http_code}\n" http://localhost:7474/)
 done
 
-mv /neo4j-graph-data-science-2.5.6.jar /var/lib/neo4j/plugins/
-
-./../usr/bin/neo4j restart
-
-status_code=$(curl -o /dev/null -s -w "%{http_code}\n" http://localhost:7474/)
-while [ $status_code -ne 200 ]; do
-    status_code=$(curl -o /dev/null -s -w "%{http_code}\n" http://localhost:7474/)
-done
-
 python ./app.py
