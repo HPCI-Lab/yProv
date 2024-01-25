@@ -4,24 +4,30 @@
 ## Run Docker Containers
 - Build service image
 ```
-    docker build . -t prov-rest-neo4j
-``` 
+    docker build . -t yprov_single_instance
+```
 
-- Run service container
+- Create a named volume to make Neo4j data persistent
+```
+docker volume create neo4j_data
+```
+
+- Create a named volume to export logs to the host machine
+```
+docker volume create neo4j_logs
+```
+
+- Run service container by mounting the two named volumes to the default file locations
 ```
     docker run\
-        --name prov-rest-neo4j \
+        --name yprov_neo4j_instance \
         -p 7474:7474 -p 7687:7687 -p 3000:3000 \
         -d \
-        -v $HOME/neo4j/data:/var/lib/neo4j/data \
-        -v $HOME/neo4j/logs:/var/lib/neo4j/logs \
-        -v $HOME/neo4j/import:/var/lib/neo4j/import \
-        -v $HOME/neo4j/plugins:/var/lib/neo4j/plugins \
-        --env NEO4J_AUTH=neo4j/password \
-        --env NEO4J_ACCEPT_LICENSE_AGREEMENT=eval \
+        --volume neo4j_data:/var/lib/neo4j/ \
+        --volume neo4j_logs:/var/log/neo4j/ 
         --env USER=neo4j \
         --env PASSWORD=password \
-        prov-rest-neo4j
+        yprov_single_instance
 ```
 
 
