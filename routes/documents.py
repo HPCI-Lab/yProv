@@ -77,7 +77,7 @@ def graph_to_prov(prov_document, nodes, edges):
 @documents_bp.route('/<string:doc_id>', methods=['GET'])
 @auth_required
 def get_document(doc_id):
-    token = request.args.get('token')
+    token = request.headers["Authorization"].split(" ")[1]
     user = get_user(token)
     if not has_user_permission(user, doc_id, 'r', docs=True):
         return jsonify({'error': "User does not have permission to execute this operation on this document!"}), 403
@@ -121,6 +121,11 @@ def upload_document(doc_id):
     if content_type != 'application/json':
         return jsonify({'error': 'Content-Type not supported!'}), 400
 
+    token = request.headers["Authorization"].split(" ")[1]
+    user = get_user(token)
+    if not has_user_permission(user, doc_id, 'w', docs=True):
+        return jsonify({'error': "User does not have permission to execute this operation on this document!"}), 403
+
     try:
         # get the ProvDocument
         data = request.data
@@ -159,7 +164,7 @@ def upload_document(doc_id):
 def delete_document(doc_id):
     db_list = []
 
-    token = request.args.get('token')
+    token = request.headers["Authorization"].split(" ")[1]
     user = get_user(token)
     if not has_user_permission(user, doc_id, 'd', docs=True):
         return jsonify({'error': "User does not have permission to execute this operation on this document!"}), 403
@@ -188,7 +193,7 @@ def add_user_access_to_graph(doc_id):
     if content_type != 'application/json':
         return jsonify({'error': 'Content-Type not supported!'}), 400
 
-    token = request.args.get('token')
+    token = request.headers["Authorization"].split(" ")[1]
     user = get_user(token)
     if not has_user_permission(user, doc_id, 'n', docs=True):
         return jsonify({'error': "User does not have permission to execute this operation on this document!"}), 403

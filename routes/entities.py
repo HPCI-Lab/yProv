@@ -24,10 +24,14 @@ entities_bp = Blueprint('entities', __name__)
 @entities_bp.route('', methods=['POST'])
 @auth_required
 def create_entity(doc_id):
-    token = request.args.get('token')
+    token = request.headers["Authorization"].split(" ")[1]
     user = get_user(token)
     if not has_user_permission(user, doc_id, 'c'):
         return jsonify({'error': "User does not have permission to execute this operation on this document!"}), 403
+
+    content_type = request.headers.get('Content-Type')
+    if content_type != 'application/json':
+        return jsonify({'error': 'Content-Type not supported!'}), 400
 
     try:
         graph = neo4j.get_db(doc_id)
@@ -62,7 +66,7 @@ def create_entity(doc_id):
 @entities_bp.route('/<string:e_id>', methods=['GET'])
 @auth_required
 def get_entity(doc_id, e_id):
-    token = request.args.get('token')
+    token = request.headers["Authorization"].split(" ")[1]
     user = get_user(token)
     if not has_user_permission(user, doc_id, 'r'):
         return jsonify({'error': "User does not have permission to execute this operation on this document!"}), 403
@@ -95,17 +99,21 @@ def get_entity(doc_id, e_id):
 
     prov_element = node_to_prov_element(node, prov_document)
 
-    return jsonify(prov_element_to_json(prov_element)), 200
+    return jsonify({'result': prov_element_to_json(prov_element)}), 200
 
 
 # Update
 @entities_bp.route('/<string:e_id>', methods=['PUT'])
 @auth_required
 def replace_entity(doc_id, e_id):
-    token = request.args.get('token')
+    token = request.headers["Authorization"].split(" ")[1]
     user = get_user(token)
     if not has_user_permission(user, doc_id, 'u'):
         return jsonify({'error': "User does not have permission to execute this operation on this document!"}), 403
+
+    content_type = request.headers.get('Content-Type')
+    if content_type != 'application/json':
+        return jsonify({'error': 'Content-Type not supported!'}), 400
 
     try:
         graph = neo4j.get_db(doc_id)
@@ -155,7 +163,7 @@ def replace_entity(doc_id, e_id):
 @entities_bp.route('/<string:e_id>', methods=['DELETE'])
 @auth_required
 def delete_entity(doc_id, e_id):
-    token = request.args.get('token')
+    token = request.headers["Authorization"].split(" ")[1]
     user = get_user(token)
     if not has_user_permission(user, doc_id, 'd'):
         return jsonify({'error': "User does not have permission to execute this operation on this document!"}), 403

@@ -24,10 +24,14 @@ agents_bp = Blueprint('agents', __name__)
 @agents_bp.route('', methods=['POST'])
 @auth_required
 def create_element(doc_id):
-    token = request.args.get('token')
+    token = request.headers["Authorization"].split(" ")[1]
     user = get_user(token)
     if not has_user_permission(user, doc_id, 'c'):
         return jsonify({'error': "User does not have permission to execute this operation on this document!"}), 403
+
+    content_type = request.headers.get('Content-Type')
+    if content_type != 'application/json':
+        return jsonify({'error': 'Content-Type not supported!'}), 400
 
     try:
         graph = neo4j.get_db(doc_id)
@@ -62,7 +66,7 @@ def create_element(doc_id):
 @agents_bp.route('/<string:e_id>', methods=['GET'])
 @auth_required
 def get_element(doc_id, e_id):
-    token = request.args.get('token')
+    token = request.headers["Authorization"].split(" ")[1]
     user = get_user(token)
     if not has_user_permission(user, doc_id, 'r'):
         return jsonify({'error': "User does not have permission to execute this operation on this document!"}), 403
@@ -95,17 +99,21 @@ def get_element(doc_id, e_id):
 
     prov_element = node_to_prov_element(node, prov_document)
 
-    return jsonify(prov_element_to_json(prov_element)), 200
+    return jsonify({'result': prov_element_to_json(prov_element)}), 200
 
 
 # Update
 @agents_bp.route('/<string:e_id>', methods=['PUT'])
 @auth_required
 def replace_element(doc_id, e_id):
-    token = request.args.get('token')
+    token = request.headers["Authorization"].split(" ")[1]
     user = get_user(token)
     if not has_user_permission(user, doc_id, 'u'):
         return jsonify({'error': "User does not have permission to execute this operation on this document!"}), 403
+
+    content_type = request.headers.get('Content-Type')
+    if content_type != 'application/json':
+        return jsonify({'error': 'Content-Type not supported!'}), 400
 
     try:
         graph = neo4j.get_db(doc_id)
@@ -155,7 +163,7 @@ def replace_element(doc_id, e_id):
 @agents_bp.route('/<string:e_id>', methods=['DELETE'])
 @auth_required
 def delete_element(doc_id, e_id):
-    token = request.args.get('token')
+    token = request.headers["Authorization"].split(" ")[1]
     user = get_user(token)
     if not has_user_permission(user, doc_id, 'd'):
         return jsonify({'error': "User does not have permission to execute this operation on this document!"}), 403

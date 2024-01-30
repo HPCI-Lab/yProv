@@ -23,10 +23,14 @@ relations_bp = Blueprint('relations', __name__)
 @relations_bp.route('', methods=['POST'])
 @auth_required
 def create_relation(doc_id):
-    token = request.args.get('token')
+    token = request.headers["Authorization"].split(" ")[1]
     user = get_user(token)
     if not has_user_permission(user, doc_id, 'c'):
         return jsonify({'error': "User does not have permission to execute this operation on this document!"}), 403
+
+    content_type = request.headers.get('Content-Type')
+    if content_type != 'application/json':
+        return jsonify({'error': 'Content-Type not supported!'}), 400
 
     try:
         graph = neo4j.get_db(doc_id)
@@ -78,7 +82,7 @@ def create_relation(doc_id):
 @relations_bp.route('/<string:r_id>', methods=['GET'])
 @auth_required
 def get_relation(doc_id, r_id):
-    token = request.args.get('token')
+    token = request.headers["Authorization"].split(" ")[1]
     user = get_user(token)
     if not has_user_permission(user, doc_id, 'r'):
         return jsonify({'error': "User does not have permission to execute this operation on this document!"}), 403
@@ -111,17 +115,21 @@ def get_relation(doc_id, r_id):
 
     prov_relation = edge_to_prov_relation(rel, prov_document)
 
-    return jsonify(prov_relation_to_json(prov_relation)), 200
+    return jsonify({'result': prov_relation_to_json(prov_relation)}), 200
 
 
 # Update
 @relations_bp.route('/<string:r_id>', methods=['PUT'])
 @auth_required
 def replace_relation(doc_id, r_id):
-    token = request.args.get('token')
+    token = request.headers["Authorization"].split(" ")[1]
     user = get_user(token)
     if not has_user_permission(user, doc_id, 'u'):
         return jsonify({'error': "User does not have permission to execute this operation on this document!"}), 403
+
+    content_type = request.headers.get('Content-Type')
+    if content_type != 'application/json':
+        return jsonify({'error': 'Content-Type not supported!'}), 400
 
     try:
         graph = neo4j.get_db(doc_id)
@@ -196,7 +204,7 @@ def replace_relation(doc_id, r_id):
 @relations_bp.route('/<string:r_id>', methods=['DELETE'])
 @auth_required
 def delete_relation(doc_id, r_id):
-    token = request.args.get('token')
+    token = request.headers["Authorization"].split(" ")[1]
     user = get_user(token)
     if not has_user_permission(user, doc_id, 'd'):
         return jsonify({'error': "User does not have permission to execute this operation on this document!"}), 403

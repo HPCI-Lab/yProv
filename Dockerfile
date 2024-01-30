@@ -20,9 +20,11 @@ WORKDIR /app
 
 RUN python -m pip install --upgrade pip
 
-COPY . .
+COPY requirements.txt .
 
 RUN pip install -r requirements.txt
+
+COPY . .
 
 ENV PORT=3000 SCHEME="bolt" ADDRESS='localhost:7687'
 
