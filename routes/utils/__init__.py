@@ -6,7 +6,10 @@ from .prov_to_neo import prov_element_to_node, prov_relation_to_edge
 
 from .constants import *
 
+from .login_verification import auth_required
+
 from py2neo import Node
+
 
 # handling neo4j ns
 def get_ns_node(prov_document):
@@ -17,6 +20,7 @@ def get_ns_node(prov_document):
     for ns in prov_document.get_registered_namespaces():
         ns_node[ns._prefix] = ns._uri
     return ns_node
+
 
 def set_document_ns(ns_node, bundle):
     for attr_name, value in ns_node.items():
