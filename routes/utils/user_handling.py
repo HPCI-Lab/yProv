@@ -4,9 +4,9 @@ import jwt
 import os
 from passlib.hash import bcrypt
 
-ACCOUNT_FILE = "accounts.json"
-BLACKLIST_FILE = "blacklist"
-GRAPHS_FILE = "graphs.json"
+ACCOUNT_FILE = "conf/accounts.json"
+BLACKLIST_FILE = "conf/blacklist"
+GRAPHS_FILE = "conf/graphs.json"
 
 
 def encode_password(password: str) -> str:
@@ -67,7 +67,7 @@ def is_token_valid(token: str) -> bool:
 
 def check_account_valid(auth_data: dict) -> bool:
     accounts_data = get_users_info(ACCOUNT_FILE)
-    if auth_data["user"] in accounts_data.keys():
+    if accounts_data and auth_data["user"] in accounts_data.keys():
         if check_password(auth_data["password"], accounts_data[auth_data["user"]]["password"]):
             return True
     return False
@@ -82,7 +82,7 @@ def check_user_presence(user: str) -> bool:
 
 def add_user(auth_data: dict):
     accounts_data = get_users_info(ACCOUNT_FILE)
-    if not auth_data["user"] in accounts_data.keys():
+    if not accounts_data or not auth_data["user"] in accounts_data.keys():
         accounts_data[auth_data["user"]] = {'password': encode_password(auth_data["password"])}
         update_file_info(ACCOUNT_FILE, accounts_data)
 
