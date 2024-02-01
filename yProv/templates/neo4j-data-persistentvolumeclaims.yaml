@@ -6,7 +6,7 @@ metadata:
   name: {{ .Values.storages.neo4j.data.name }}
 spec:
   accessModes:
-    - ReadWriteOnce
+    - {{ .Values.storages.neo4j.data.accessMode }}
   resources:
     requests:
       storage: {{ .Values.storages.neo4j.data.resources.requirements.storage }}

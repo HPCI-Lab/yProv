@@ -40,18 +40,21 @@ storages:
     data:
       service: "neo4j-data"
       name: "neo4j-data"
+      accessMode: ReadWriteOnce
       resources:
         requirements:
           storage: 100Mi
     logs:
       service: "neo4j-logs"
       name: "neo4j-logs"
+      accessMode: ReadWriteOnce
       resources:
         requirements:
           storage: 100Mi
   yprov:
     service: "yprov-data"
     name: "yprov-data"
+    accessMode: ReadWriteMany
     resources:
       requirements:
-        storage: 100Mi
+        storage: 200Mi

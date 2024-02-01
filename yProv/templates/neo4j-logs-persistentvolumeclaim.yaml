@@ -6,7 +6,7 @@ metadata:
   name: {{ .Values.storages.neo4j.logs.name }}
 spec:
   accessModes:
-    - ReadWriteOnce
+    - {{ .Values.storages.neo4j.logs.accessMode }}
   resources:
     requests:
       storage: {{ .Values.storages.neo4j.logs.resources.requirements.storage }}
