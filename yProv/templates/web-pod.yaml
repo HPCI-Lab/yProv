@@ -14,5 +14,12 @@ spec:
           hostPort: {{ .Values.web.ports.port }}
           protocol: TCP
       resources: {}
+      volumeMounts:
+        - mountPath: /app/conf
+          name: {{ .Values.storages.yprov.name }}
   restartPolicy: OnFailure
+  volumes:
+    - name: {{ .Values.storages.yprov.name }}
+      persistentVolumeClaim:
+        claimName: {{ .Values.storages.yprov.name }}
 status: {}

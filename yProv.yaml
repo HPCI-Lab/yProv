@@ -4,7 +4,7 @@ imports:
   - grycap_custom_types: https://raw.githubusercontent.com/grycap/tosca/main/custom_types.yaml
 
 metadata:
-  version: "1.0.0"
+  version: "1.0.1"
   name: yProv
   display_name: Deploy yProv service on top of a Kubernetes Virtual Cluster
   # icon: images/yprov.png
@@ -49,7 +49,9 @@ topology_template:
           db.env.license.value: { get_input: neo4j_license }
           db.env.plugins.name: NEO4J_PLUGINS
           db.env.plugins.value: { get_input: neo4j_plugins }
-          neo4j.resources.requirements.storage: { get_input: storage_dimension }
+          storage.neo4j.data.resources.requirements.storage: { get_input: storage_dimension }
+          storage.neo4j.logs.resources.requirements.storage: { get_input: storage_dimension }
+          storage.yprov.resources.requirements.storage: { get_input: storage_dimension }
       requirements:
         - host: lrms_front_end
 

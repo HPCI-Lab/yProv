@@ -46,10 +46,15 @@ spec:
           resources: {}
           volumeMounts:
             - mountPath: /data
-              name: {{ .Values.neo4j.name }}
+              name: {{ .Values.storages.neo4j.data.name }}
+            - mountPath: /logs
+              name: {{ .Values.storages.neo4j.logs.name }}
       restartPolicy: Always
       volumes:
-        - name: {{ .Values.neo4j.name }}
+        - name: {{ .Values.storages.neo4j.data.name }}
           persistentVolumeClaim:
-            claimName: {{ .Values.neo4j.name }}
+            claimName: {{ .Values.storages.neo4j.data.name }}
+        - name: {{ .Values.storages.neo4j.logs.name }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.storages.neo4j.logs.name }}
 status: {}

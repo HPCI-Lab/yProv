@@ -35,9 +35,23 @@ db:
   config:
     dbms.security.procedures.unrestricted: "gds.*" # added following "https://neo4j.com/docs/operations-manual/current/kubernetes/plugins/#_install_gds_community_edition_ce"
 
-neo4j:
-  service: "neo4j-data"
-  name: "neo4j-data"
-  resources:
-    requirements:
-      storage: 100Mi
+storages:
+  neo4j:
+    data:
+      service: "neo4j-data"
+      name: "neo4j-data"
+      resources:
+        requirements:
+          storage: 100Mi
+    logs:
+      service: "neo4j-logs"
+      name: "neo4j-logs"
+      resources:
+        requirements:
+          storage: 100Mi
+  yprov:
+    service: "yprov-data"
+    name: "yprov-data"
+    resources:
+      requirements:
+        storage: 100Mi
