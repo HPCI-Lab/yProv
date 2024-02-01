@@ -6,6 +6,7 @@ ADDRESS = os.environ['ADDRESS']
 USER = os.environ['USER']
 PASSWORD = os.environ['PASSWORD']
 
+
 # based on py2neo client.py
 class Neo4j:
 
@@ -76,4 +77,4 @@ class Neo4j:
         for label in NODE_LABELS.values():
             if "id" not in self.graph_db.schema.get_uniqueness_constraints(label):
                 self.graph_db.schema.create_uniqueness_constraint(label, "id")
-    '''  
+    '''

@@ -1,4 +1,4 @@
-from flask import request, Response, Blueprint
+from flask import request, Blueprint, jsonify
 from prov.model import ProvDocument, ProvElement, ProvRelation
 from prov.graph import INFERRED_ELEMENT_CLASS
 from py2neo.data import Subgraph, Node
@@ -10,18 +10,21 @@ from .utils import (
     ELEMENT_NODE_PRIMARY_LABEL,
     ELEMENT_NODE_PRIMARY_ID,
     NS_NODE_LABEL,
-    prov_element_to_node, 
+    prov_element_to_node,
     prov_relation_to_edge,
     node_to_prov_element,
     edge_to_prov_relation,
     get_ns_node,
-    set_document_ns
+    set_document_ns,
+    auth_required
 )
+
+from .utils.user_handling import *
 
 documents_bp = Blueprint('documents', __name__)
 
-def prov_to_graph(prov_document):
 
+def prov_to_graph(prov_document):
     graph = Subgraph()
     # Returns a new document containing all records having same identifiers unified (including those inside bundles)
     unified = prov_document.unified()
@@ -29,15 +32,14 @@ def prov_to_graph(prov_document):
 
     for element in unified.get_records(ProvElement):
         node = prov_element_to_node(element)
-        graph = graph | node        # union operator: add Node to the Subgraph
+        graph = graph | node  # union operator: add Node to the Subgraph
         node_map[element.identifier] = node
-    
 
     for relation in unified.get_records(ProvRelation):
         # taking the first two elements of a relation
         attr_pair_1, attr_pair_2 = relation.formal_attributes[:2]
         # only need the QualifiedName (i.e. the value of the attribute)
-        qn1, qn2 = attr_pair_1[1], attr_pair_2[1] # sono gli id degli elementi
+        qn1, qn2 = attr_pair_1[1], attr_pair_2[1]  # elements' id
 
         if qn1 and qn2:  # only proceed if both ends of the relation exist
             try:
@@ -54,17 +56,15 @@ def prov_to_graph(prov_document):
             rel = prov_relation_to_edge(relation, start_node, end_node)
 
             graph = graph | rel
-            
+
     return graph
 
 
 def graph_to_prov(prov_document, nodes, edges):
-
     # then add element
     for node in nodes:
         if not node.has_label(NS_NODE_LABEL):
             node_to_prov_element(node, prov_document)
-            
 
     # finally add relation
     for edge in edges:
@@ -75,14 +75,20 @@ def graph_to_prov(prov_document, nodes, edges):
 
 # Read
 @documents_bp.route('/<string:doc_id>', methods=['GET'])
+@auth_required
 def get_document(doc_id):
+    token = request.headers["Authorization"].split(" ")[1]
+    user = get_user(token)
+    if not has_user_permission(user, doc_id, 'r', docs=True):
+        return jsonify({'error': "User does not have permission to execute this operation on this document!"}), 403
+
     # get db and check if it exists
     graph = neo4j.get_db(doc_id)
 
     try:
         assert graph
     except AssertionError:
-        return "Document not found", 404
+        return jsonify({'error': "Document not found"}), 404
     else:
         node_matcher = NodeMatcher(graph)
         relationship_matcher = RelationshipMatcher(graph)
@@ -96,29 +102,39 @@ def get_document(doc_id):
 
         prov_document = graph_to_prov(prov_document, nodes, relationships)
 
-        return Response(prov_document.serialize(), mimetype='application/json')
+        return jsonify({'result': prov_document.serialize()}), 200
+
 
 # Get list
 @documents_bp.route('', methods=['GET'])
+@auth_required
 def get_list_of_documents():
-    return neo4j.get_all_dbs()
+    return jsonify({'result': neo4j.get_all_dbs()}), 200
+
 
 # Create
 @documents_bp.route('/<string:doc_id>', methods=['PUT'])
+@auth_required
 def upload_document(doc_id):
     # check if json
     content_type = request.headers.get('Content-Type')
-    if (content_type != 'application/json'):
-        return 'Content-Type not supported!', 400
-    
+    if content_type != 'application/json':
+        return jsonify({'error': 'Content-Type not supported!'}), 400
+
+    token = request.headers["Authorization"].split(" ")[1]
+    user = get_user(token)
+    if not has_user_permission(user, doc_id, 'w', docs=True):
+        return jsonify({'error': "User does not have permission to execute this operation on this document!"}), 403
+
     try:
         # get the ProvDocument
         data = request.data
         prov_document = ProvDocument.deserialize(content=data)
-    except:
-        return "Document not valid", 400 
 
-    # parse ProvDocument to SubGraph  
+    except:
+        return jsonify({'error': "Document not valid"}), 400
+
+    # parse ProvDocument to SubGraph
     s = prov_to_graph(prov_document)
 
     graph = neo4j.get_db(doc_id)
@@ -131,26 +147,75 @@ def upload_document(doc_id):
         # update ns if necessary
         graph.push(get_ns_node(prov_document))
 
+    # add user permission to modify graph
+    token = request.args.get('token')
+    user = get_user(token)
+    add_new_graph(user, doc_id)
+
     # merge on anonymous label _Node and property id
     graph.merge(s, ELEMENT_NODE_PRIMARY_LABEL, ELEMENT_NODE_PRIMARY_ID)
 
-    return "Document uploaded", 201      
+    return jsonify({'message': "Document uploaded"}), 201
+
 
 # Delete
 @documents_bp.route('/<string:doc_id>', methods=['DELETE'])
+@auth_required
 def delete_document(doc_id):
     db_list = []
+
+    token = request.headers["Authorization"].split(" ")[1]
+    user = get_user(token)
+    if not has_user_permission(user, doc_id, 'd', docs=True):
+        return jsonify({'error': "User does not have permission to execute this operation on this document!"}), 403
+
     try:
         db_list = neo4j.get_all_dbs()
     except:
-        return "DB error", 500
-    
-    if(doc_id in db_list):
+        return jsonify({'error': "DB error"}), 500
+
+    if doc_id in db_list:
         try:
             neo4j.delete_db(doc_id)
         except:
-            return "DB error", 500
-        
-        return "Document deleted", 200
+            return jsonify({'error': "DB error"}), 500
+
+        return jsonify({'message': "Document deleted"}), 200
     else:
-        return "Document not found", 404
+        return jsonify({'error': "Document not found"}), 404
+
+
+@documents_bp.route('/<string:doc_id>/addUser', methods=['PUT'])
+@auth_required
+def add_user_access_to_graph(doc_id):
+    # check if json
+    content_type = request.headers.get('Content-Type')
+    if content_type != 'application/json':
+        return jsonify({'error': 'Content-Type not supported!'}), 400
+
+    token = request.headers["Authorization"].split(" ")[1]
+    user = get_user(token)
+    if not has_user_permission(user, doc_id, 'n', docs=True):
+        return jsonify({'error': "User does not have permission to execute this operation on this document!"}), 403
+
+    try:
+        data = request.json
+
+    except:
+        return jsonify({'error': "Data not valid"}), 400
+
+    if not is_graph_valid(doc_id):
+        return jsonify({'error': "Database not present!"}), 404
+
+    if not check_user_presence(data["user"]):
+        return jsonify({'error': "User not present in the system. Registration is needed!"}), 403
+
+    if not data["level"] in ['o', 'r', 'w']:
+        return jsonify({'error': "Level requested does not exists!"}), 403
+
+    if data["level"] == 'o':
+        return jsonify({'error': "Only one owner is possible for each db!"}), 403
+
+    add_new_user_permission(data["user"], doc_id, data["level"])
+
+    return jsonify({'message': "Successfully added access to the db!"}), 201

@@ -1,10 +1,11 @@
 from prov.constants import *
 from prov.serializers.provjson import *
 
-# based on decode_json_container at <https://github.com/trungdong/prov/blob/master/src/prov/serializers/provjson.py>
-def json_to_prov_record(json, bundle):
 
-    for rec_type_str, rec_content in json.items():
+# based on decode_json_container at <https://github.com/trungdong/prov/blob/master/src/prov/serializers/provjson.py>
+def json_to_prov_record(json_file, bundle):
+
+    for rec_type_str, rec_content in json_file.items():
         # get the type of the record 
         rec_type = PROV_RECORD_IDS_MAP[rec_type_str]
         
