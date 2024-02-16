@@ -15,7 +15,20 @@
 - Build service image
 ```
     docker build . -t prov-rest-neo4j
-``` 
+```
+- Create a named volume to make Neo4j data persistent
+```
+docker volume create neo4j_data
+```
+- Create a named volume to export logs to the host machine
+```
+docker volume create neo4j_logs
+```
+- Create a named volume to make the configuration of yprov persistent to the host machine
+```
+docker volume create yprov_data
+```
+The volumes definition is necessary only on the first start (or if the volumes are deleted)
 
 - Run neo4j container
 ```
@@ -23,8 +36,8 @@
         --name neo4j \
         -p 7474:7474 -p7687:7687 \
         -d \
-        -v $HOME/neo4j/data:/data \
-        -v $HOME/neo4j/logs:/logs \
+        -v neo4j_data:/data \
+        -v neo4j_logs:/logs \
         -v $HOME/neo4j/import:/var/lib/neo4j/import \
         -v $HOME/neo4j/plugins:/plugins \
         --env NEO4J_AUTH=neo4j/password \
@@ -38,6 +51,9 @@
         --name prov-rest \
         -p 3000:3000 \
         -d \
+        -v yprov_data:/app/conf \
+        --env USER=neo4j \
+        --env PASSWORD=password \
         prov-rest-neo4j
 ```
 

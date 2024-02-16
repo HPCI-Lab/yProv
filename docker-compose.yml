@@ -9,6 +9,9 @@ services:
       - db
     ports:
       - "3000:3000"
+    environment:
+      USER: neo4j
+      PASSWORD: password
     volumes:
       - yprov_data:/app/conf
 
@@ -32,8 +35,5 @@ services:
 
 volumes:
   neo4j_data:
-    external: True
   neo4j_logs:
-    external: True
   yprov_data:
-    external: True
