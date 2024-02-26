@@ -3,6 +3,7 @@ import os
 from py2neo import ClientError, DatabaseError, GraphService
 
 ADDRESS = os.environ['ADDRESS']
+SCHEME = os.getenv('SCHEME')
 USER = os.environ['USER']
 PASSWORD = os.environ['PASSWORD']
 
@@ -19,13 +20,22 @@ class Neo4j:
 
     def connect(self):    
         try:
-            self.service = GraphService(
-                address=ADDRESS,
-                user=USER,
-                password=PASSWORD
-            )
+            if SCHEME:
+                self.service = GraphService(
+                    address=ADDRESS,
+                    scheme=SCHEME,
+                    user=USER,
+                    password=PASSWORD
+                )
+            else:
+                self.service = GraphService(
+                    address=ADDRESS,
+                    user=USER,
+                    password=PASSWORD
+                )
         except Exception as ex:
-            msg = f"Failed to establish a connection to '{ADDRESS}' with user '{USER}' and the specified password."
+            msg = (f"Failed to establish a connection to '{SCHEME+':' if SCHEME else ''}{ADDRESS}' with user '{USER}' "
+                   f"and the specified password.")
             raise ConnectionError(msg) from None
 
         # print('DBMS connected')
