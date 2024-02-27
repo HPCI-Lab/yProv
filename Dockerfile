@@ -1,7 +1,9 @@
-FROM python:3.12-bullseye
+FROM python:3.12-slim-bullseye
 
 RUN apt-get update
-
+RUN apt-get install -y wget
+RUN apt-get -y install gnupg
+RUN apt-get -y install curl
 RUN wget -O - https://debian.neo4j.com/neotechnology.gpg.key | apt-key add -
 RUN echo 'deb https://debian.neo4j.com stable latest' | tee -a /etc/apt/sources.list.d/neo4j.list
 RUN apt-get update
