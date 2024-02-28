@@ -14,20 +14,20 @@ def auth_required(f):
             token = request.headers["Authorization"].split(" ")[1]
 
         if not token:
-            return jsonify({'message': 'Token is missing!'}), 401
+            return jsonify({'error': 'Token is missing!'}), 401
         try:
             header_data = jwt.get_unverified_header(token)
             data = jwt.decode(token, os.getenv('SECRET_KEY', "secret_key"), algorithms=[header_data['alg'],])
             user = data["user"]
             if not check_user_presence(user):
-                return jsonify({'message': 'User not valid. Please register!'}), 401
+                return jsonify({'error': 'User not valid. Please register!'}), 401
 
         except jwt.ExpiredSignatureError:
-            return jsonify({'message': 'Signature expired. Please log in again!'}), 401
+            return jsonify({'error': 'Signature expired. Please log in again!'}), 401
         except jwt.InvalidTokenError:
-            return jsonify({'message': 'Invalid token. Please log in again!'}), 401
+            return jsonify({'error': 'Invalid token. Please log in again!'}), 401
         except:
-            return jsonify({'message': 'Token is invalid!'}), 401
+            return jsonify({'error': 'Token is invalid!'}), 401
 
         return f(*args, **kwargs)
 
