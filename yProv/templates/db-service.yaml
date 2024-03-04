@@ -9,6 +9,7 @@ spec:
     - port: {{ .Values.db.ports.port1.port }}
       targetPort: {{ .Values.db.ports.port1.targetPort }}
       name: {{ .Values.db.ports.port1.name }}
+      nodePort: {{ .Values.db.ports.port1.port }}
     - port: {{ .Values.db.ports.port2.port }}
       targetPort: {{ .Values.db.ports.port2.targetPort }}
       name: {{ .Values.db.ports.port2.name }}

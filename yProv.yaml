@@ -6,8 +6,8 @@ imports:
 metadata:
   version: "1.0.1"
   name: yProv
-  display_name: Deploy yProv service on top of a Kubernetes Virtual Cluster
-  # icon: images/yprov.png
+  display_name: Deploy yProv service on top of a Kubernetes Virtual Cluster.
+  
   parents:
     - kubernetes.yaml
 
@@ -40,7 +40,7 @@ topology_template:
       type: tosca.nodes.indigo.Helm.Chart
       properties:
         namespace: yprov
-        chart_url:  # TODO: upload helm chart anywhere? If yes, paste its url here?
+        chart_url:  
         name: yProv
         values:
           db.env.auth.name: NEO4J_AUTH
@@ -70,6 +70,7 @@ topology_template:
             - http:
                 paths:
                 - path: /
+                  pathType: ImplementationSpecific
                   backend:
                     service:
                       name: web
@@ -78,12 +79,12 @@ topology_template:
             - http:
                 paths:
                 - path: /browser
+                  pathType: ImplementationSpecific
                   backend:
                     service:
                       name: db
                       port:
                         number: 7474
-                  pathType: ImplementationSpecific
       requirements:
         - host: lrms_front_end
         - dependency: yprov

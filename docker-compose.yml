@@ -2,15 +2,23 @@ version: "3"
 services:
   web:
     build: .
-    restart: on-failure
+    restart: always
     depends_on:
       - db
     links: 
       - db
     ports:
       - "3000:3000"
+    environment:
+      USER: neo4j
+      PASSWORD: password
     volumes:
       - yprov_data:/app/conf
+    healthcheck:
+        test: ["CMD", "wget", "--no-verbose", "--tries=1",  "--spider", "http://web:3000"]
+        interval: 30s
+        timeout: 10s
+        retries: 5
 
   db:
     image: "neo4j:enterprise"
@@ -32,8 +40,5 @@ services:
 
 volumes:
   neo4j_data:
-    external: True
   neo4j_logs:
-    external: True
   yprov_data:
-    external: True

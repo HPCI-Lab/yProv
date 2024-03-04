@@ -6,8 +6,9 @@ spec:
   ports:
     - port: {{ .Values.web.ports.port }}
       targetPort: {{ .Values.web.ports.targetPort }}
-      # name: {{ .Values.web.ports.name }}
+      name: {{ .Values.web.ports.name }}
   selector:
     service: {{ .Values.web.service }}
+  type: NodePort
 status:
   loadBalancer: {}
