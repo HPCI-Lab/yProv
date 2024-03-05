@@ -200,7 +200,10 @@ def add_user_access_to_graph(doc_id):
 
     try:
         data = request.json
-
+        if not ("user" in data and "level" in data) or \
+            (data["user"] is None or data["user"] == "") or \
+            (data["level"] is None or data["level"] == ""):
+                raise Exception
     except:
         return jsonify({'error': "Data not valid"}), 400
 
