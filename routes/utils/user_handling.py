@@ -145,6 +145,9 @@ def has_user_permission(user: str, doc_id: str, permissions_requested, docs=Fals
                 if (graphs_data[doc_id][user] == 'o' or
                         graphs_data[doc_id][user] == 'w'):
                     return True
+    else:
+        if permissions_requested == 'c':
+            return True
     return False
 
 
