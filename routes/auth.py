@@ -40,6 +40,10 @@ def register_user():
     try:
         # get the request data
         data = request.json
+        if not ("user" in data and "password" in data) or \
+            (data["user"] is None or data["user"] == "") or \
+            (data["password"] is None or data["password"] == ""):
+                raise Exception 
     except:
         return jsonify({"error": "Data not valid"}), 400
 

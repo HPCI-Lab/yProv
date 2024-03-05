@@ -1,5 +1,4 @@
 import json
-import datetime
 import jwt
 import os
 from passlib.hash import bcrypt
@@ -43,28 +42,6 @@ def is_blacklisted(token: str) -> bool:
         print(f'Error: {e}')
 
 
-# def add_to_blacklist(token: str):
-#     try:
-#         with open(BLACKLIST_FILE, 'a') as file:
-#             file.write(token + '\n')
-#     except Exception as e:
-#         print(f'Error: {e}')
-#         raise e
-
-
-# def is_token_valid(token: str) -> bool:
-#     try:
-#         header_data = jwt.get_unverified_header(token)
-#         data = jwt.decode(token, os.getenv('SECRET_KEY', "secret_key"), algorithms=[header_data['alg'], ])
-#         time_difference = datetime.datetime.utcfromtimestamp(data['exp']) - datetime.datetime.utcnow()
-#         if is_blacklisted(token) or time_difference < datetime.timedelta(minutes=5):
-#             return False
-#         else:
-#             return True
-#     except:
-#         return False
-
-
 def check_account_valid(auth_data: dict) -> bool:
     accounts_data = get_users_info(ACCOUNT_FILE)
     if accounts_data and auth_data["user"] in accounts_data.keys():
@@ -85,14 +62,6 @@ def add_user(auth_data: dict):
     if not accounts_data or not auth_data["user"] in accounts_data.keys():
         accounts_data[auth_data["user"]] = {'password': encode_password(auth_data["password"])}
         update_file_info(ACCOUNT_FILE, accounts_data)
-
-
-# def get_password(user: str) -> str:
-#     accounts_data = get_users_info(ACCOUNT_FILE)
-#     if user in accounts_data.keys():
-#         return accounts_data[user]["password"]
-#     else:
-#         return ""
 
 
 def get_user(token: str) -> str:
@@ -145,6 +114,9 @@ def has_user_permission(user: str, doc_id: str, permissions_requested, docs=Fals
                 if (graphs_data[doc_id][user] == 'o' or
                         graphs_data[doc_id][user] == 'w'):
                     return True
+    else:
+        if permissions_requested == 'c':
+            return True
     return False
 
 
