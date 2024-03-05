@@ -16,6 +16,10 @@ def login_user():
     try:
         # get the request data
         data = request.json
+        if not ("user" in data and "password" in data) or \
+            (data["user"] is None or data["user"] == "") or \
+            (data["password"] is None or data["password"] == ""):
+                raise Exception
     except:
         return jsonify({"error": "Data not valid"}), 400
 
@@ -40,10 +44,16 @@ def register_user():
     try:
         # get the request data
         data = request.json
+        if not ("user" in data and "password" in data) or \
+            (data["user"] is None or data["user"] == "") or \
+            (data["password"] is None or data["password"] == ""):
+                raise Exception
     except:
         return jsonify({"error": "Data not valid"}), 400
 
     if data:
+        if check_user_presence(data["user"]):
+            return jsonify({'error': 'Username not available. Please retry with a different one!'}), 400
         add_user(data)
         return jsonify({"message": 'Registered!'}), 201
 
