@@ -121,11 +121,6 @@ def upload_document(doc_id):
     if content_type != 'application/json':
         return jsonify({'error': 'Content-Type not supported!'}), 400
 
-    token = request.headers["Authorization"].split(" ")[1]
-    user = get_user(token)
-    if not has_user_permission(user, doc_id, 'w', docs=True):
-        return jsonify({'error': "User does not have permission to execute this operation on this document!"}), 403
-
     try:
         # get the ProvDocument
         data = request.data
@@ -148,7 +143,7 @@ def upload_document(doc_id):
         graph.push(get_ns_node(prov_document))
 
     # add user permission to modify graph
-    token = request.args.get('token')
+    token = request.headers["Authorization"].split(" ")[1]
     user = get_user(token)
     add_new_graph(user, doc_id)
 
