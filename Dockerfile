@@ -10,7 +10,7 @@ RUN pip install -r requirements.txt
 
 COPY . .
 
-ENV PORT=3000 SCHEME="bolt" ADDRESS='localhost:7687'
+ENV PORT=3000 SCHEME="bolt" ADDRESS='db:7687'
 
 EXPOSE 3000
 
