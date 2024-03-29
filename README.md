@@ -14,7 +14,7 @@
 ## Run on two Docker Containers
 - Build service image
 ```
-    docker build . -t prov-rest-neo4j
+    docker build . -t yprov-web
 ```
 - Create a named volume to make Neo4j data persistent
 ```
@@ -36,9 +36,9 @@ docker network create yprov_net
 - Run neo4j container
 ```
     docker run \
-        --name neo4j \
+        --name db \
         --network=yprov_net \
-        -p 7474:7474 -p7687:7687 \
+        -p 7474:7474 -p 7687:7687 \
         -d \
         -v neo4j_data:/data \
         -v neo4j_logs:/logs \
@@ -52,12 +52,12 @@ docker network create yprov_net
 - Run service container
 ```
     docker run \
-        --name prov-rest \
+        --name web \
         --network=yprov_net \
         -p 3000:3000 \
         -d \
         -v yprov_data:/app/conf \
         --env USER=neo4j \
         --env PASSWORD=password \
-        prov-rest-neo4j
+        yprov-web
 ```
