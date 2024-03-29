@@ -3,12 +3,12 @@
 ## Run with Docker Compose
 - Buil compose image
 ```
-    docker-compose build
+    docker compose build
 ```
 
 - Run compose containers
 ```
-    docker-compose up -d
+    docker compose up -d
 ```
 
 ## Run on two Docker Containers
@@ -29,11 +29,15 @@ docker volume create neo4j_logs
 docker volume create yprov_data
 ```
 The volumes definition is necessary only on the first start (or if the volumes are deleted)
-
+- Create a Docker network
+```
+docker network create yprov_net
+```
 - Run neo4j container
 ```
     docker run \
         --name neo4j \
+        --network=yprov_net \
         -p 7474:7474 -p7687:7687 \
         -d \
         -v neo4j_data:/data \
@@ -49,6 +53,7 @@ The volumes definition is necessary only on the first start (or if the volumes a
 ```
     docker run \
         --name prov-rest \
+        --network=yprov_net \
         -p 3000:3000 \
         -d \
         -v yprov_data:/app/conf \
@@ -56,5 +61,3 @@ The volumes definition is necessary only on the first start (or if the volumes a
         --env PASSWORD=password \
         prov-rest-neo4j
 ```
-
-
