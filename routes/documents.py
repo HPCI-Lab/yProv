@@ -202,6 +202,9 @@ def add_user_access_to_graph(doc_id):
     except:
         return jsonify({'error': "Data not valid"}), 400
 
+    if user == data["user"]:
+        return jsonify({'error': "Cannot modify owner permission. Graph must have a owner!"}), 403
+    
     if not is_graph_valid(doc_id):
         return jsonify({'error': "Database not present!"}), 404
 
