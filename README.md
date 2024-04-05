@@ -46,6 +46,10 @@ docker network create yprov_net
         -v $HOME/neo4j/plugins:/plugins \
         --env NEO4J_AUTH=neo4j/password \
         --env NEO4J_ACCEPT_LICENSE_AGREEMENT=eval \
+        -e NEO4J_apoc_export_file_enabled=true \
+        -e NEO4J_apoc_import_file_enabled=true \
+        -e NEO4J_apoc_import_file_use__neo4j__config=true \
+        -e NEO4J_PLUGINS=\[\"apoc\"\] \
         neo4j:enterprise
 ```
 
