@@ -104,7 +104,51 @@ def get_document(doc_id):
 
         return jsonify({'result': prov_document.serialize()}), 200
 
+# Get subgraph
+@documents_bp.route('/<string:doc_id>/subgraph', methods=['GET'])
+@auth_required                                                
+def get_subgraph(doc_id):  
 
+    token = request.headers["Authorization"].split(" ")[1]
+    user = get_user(token)
+    
+    if not has_user_permission(user, doc_id, 'r', docs=True):
+        return jsonify({'error': "User does not have permission to execute this operation on this document!"}), 403
+    
+    e_id = request.args.get('id')
+    if not e_id:
+        return jsonify({'error': "id is missing"}), 404                                                                                                           
+    try:                                                                                                            
+        graph = neo4j.get_db(doc_id)                                                                                
+    except:                                                                                                         
+        return jsonify({'error': "DB error"}), 500                                                                  
+                                                                                                                    
+    try:                                                                                                            
+        assert graph                                                                                                
+    except AssertionError:                                                                                          
+        return jsonify({'error': "Document not found"}), 404                                                        
+                                                                                                                    
+    try:                                                                                                            
+        query = """MATCH (n {id: $e_id}) CALL apoc.path.subgraphAll(n, {relationshipFilter:'>'}) YIELD nodes, relationships RETURN nodes, relationships"""
+        subgraph = graph.run(query,parameters={'e_id':e_id}).data()                                                                           
+    except:                                                                                                                                   
+        return jsonify({'error': "DB error"}), 500    
+                                                               
+    try:                                                                                                                                       
+        nodes = subgraph[0]['nodes']                                                                                
+        relationships = subgraph[0]['relationships'] 
+        
+        node_matcher = NodeMatcher(graph)                                                                           
+        relationship_matcher = RelationshipMatcher(graph)                                                                                     
+        ns_node = node_matcher.match(NS_NODE_LABEL).first()                                                                                        
+        prov_document = ProvDocument()                                                                                                         
+        set_document_ns(ns_node, prov_document)                                                                                            
+        prov_document = graph_to_prov(prov_document, nodes, relationships)                                                                     
+        
+        return jsonify({'result': prov_document.serialize()}), 200
+    except:
+        return jsonify({'error': "Subgraph not found"}), 404
+    
 # Get list
 @documents_bp.route('', methods=['GET'])
 @auth_required
