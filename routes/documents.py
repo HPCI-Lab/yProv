@@ -151,7 +151,6 @@ def get_subgraph(doc_id):
     
 # Get list
 @documents_bp.route('', methods=['GET'])
-@auth_required
 def get_list_of_documents():
     return jsonify({'result': neo4j.get_all_dbs()}), 200
 
