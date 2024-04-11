@@ -1,7 +1,7 @@
 web:
   name: web
   service: web
-  image: hpci/yprov-im:latest
+  image: hpci/yprov:latest
   ports:
     name: port3000
     port: 3000
