@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    service: {{ .Values.db.service }}
+  name: {{ .Values.db.name }}
+spec:
+  replicas: {{ .Values.db.spec.replicas }}
+  selector:
+    matchLabels:
+      service: {{ .Values.db.service }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        network/yprov-default: "true"
+        service: {{ .Values.db.service }}
+    spec:
+      containers:
+        - env:
+          - name: {{ .Values.db.env.license.name }}
+            value: {{ .Values.db.env.license.value }}
+          - name: {{ .Values.db.env.auth.name }}
+            value: {{ .Values.db.env.auth.value }}
+          - name: {{ .Values.db.env.plugins.name }}
+            value: {{ .Values.db.env.plugins.value }}
+        image: {{ .Values.db.image }}
+        livenessProbe:
+          exec:
+            command:
+              - curl
+              - -f
+              - http://db:7474
+          failureThreshold: 5
+          periodSeconds: 30
+          timeoutSeconds: 10
+        name: {{ .Values.db.name }}
+        ports:
+          - containerPort: {{ .Values.db.ports.port1.targetPort }}
+            hostPort: {{ .Values.db.ports.port1.port }}
+            protocol: TCP
+          - containerPort: {{ .Values.db.ports.port2.targetPort }}
+            hostPort: {{ .Values.db.ports.port2.port }}
+            protocol: TCP
+        resources: {}
+        volumeMounts:
+          - mountPath: /data
+            name: {{ .Values.storages.neo4j.data.name }}
+          - mountPath: /logs
+            name: {{ .Values.storages.neo4j.logs.name }}
+      restartPolicy: Always
+      volumes:
+        - name: {{ .Values.storages.neo4j.data.name }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.storages.neo4j.data.name }}
+        - name: {{ .Values.storages.neo4j.logs.name }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.storages.neo4j.logs.name }}
+status: {}
