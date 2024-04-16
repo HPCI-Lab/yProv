@@ -26,7 +26,7 @@ spec:
               value: {{ .Values.web.env.user.value }}
             - name: {{ .Values.web.env.password.name }}
               value: {{ .Values.web.env.password.value }}
-        - image: {{ .Values.web.image }}
+          image: {{ .Values.web.image }}
           livenessProbe:
             exec:
               command:
