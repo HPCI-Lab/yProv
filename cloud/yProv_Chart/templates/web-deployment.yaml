@@ -21,6 +21,11 @@ spec:
         service: {{ .Values.web.service }}
     spec:
       containers:
+        - env:
+            - name: {{ .Values.web.env.user.name }}
+              value: {{ .Values.web.env.user.value }}
+            - name: {{ .Values.web.env.password.name }}
+              value: {{ .Values.web.env.password.value }}
         - image: {{ .Values.web.image }}
           livenessProbe:
             exec:

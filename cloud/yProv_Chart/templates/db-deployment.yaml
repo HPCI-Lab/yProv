@@ -28,6 +28,12 @@ spec:
             value: {{ .Values.db.env.auth.value }}
           - name: {{ .Values.db.env.plugins.name }}
             value: {{ .Values.db.env.plugins.value }}
+          - name: {{ .Values.db.env.apoc_export.name }}
+            value: {{ .Values.db.env.apoc_export.value }}
+          - name: {{ .Values.db.env.apoc_import.name }}
+            value: {{ .Values.db.env.apoc_import.value }}
+          - name: {{ .Values.db.env.apoc_import_config.name }}
+            value: {{ .Values.db.env.apoc_import_config.value }}
         image: {{ .Values.db.image }}
         livenessProbe:
           exec:

@@ -8,6 +8,13 @@ web:
     targetPort: 3000
   spec:
     replicas: 1
+  env:
+    user:
+      name: USER
+      value: neo4j
+    password:
+      name: PASSWORD
+      value: password
 
 db:
   service: db
@@ -31,12 +38,21 @@ db:
     license:
       name: NEO4J_ACCEPT_LICENSE_AGREEMENT
       value: eval
+    apoc_export:
+      name: NEO4J_apoc_export_file_enabled
+      value: true 
+    apoc_import:
+       name: NEO4J_apoc_import_file_enabled
+       value: true  
+    apoc_import_config:
+      name: NEO4J_apoc_import_file_use__neo4j__config
+      value: true
     plugins:
       name: NEO4J_PLUGINS
       value: |
-        '["graph-data-science"]'
+        '["apoc", "graph-data-science"]'
   config:
-    dbms.security.procedures.unrestricted: "gds.*" # added following "https://neo4j.com/docs/operations-manual/current/kubernetes/plugins/#_install_gds_community_edition_ce"
+    dbms.security.procedures.unrestricted: "gds.*"
 
 storages:
   neo4j:
