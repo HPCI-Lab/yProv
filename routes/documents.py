@@ -223,7 +223,7 @@ def delete_document(doc_id):
         return jsonify({'error': "Document not found"}), 404
 
 
-@documents_bp.route('/<string:doc_id>/addUser', methods=['PUT'])
+@documents_bp.route('/<string:doc_id>/permissions', methods=['PUT'])
 @auth_required
 def add_user_access_to_graph(doc_id):
     # check if json

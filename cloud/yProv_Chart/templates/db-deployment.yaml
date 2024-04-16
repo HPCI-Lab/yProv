@@ -21,7 +21,7 @@ spec:
         service: {{ .Values.db.service }}
     spec:
       containers:
-        - env:
+      - env:
           - name: {{ .Values.db.env.license.name }}
             value: {{ .Values.db.env.license.value }}
           - name: {{ .Values.db.env.auth.name }}
