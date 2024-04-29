@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    service: {{ .Values.web.service }}
+  name: {{ .Values.web.name }}
+spec:
+  replicas: {{ .Values.web.spec.replicas }}
+  selector:
+    matchLabels:
+      service: {{ .Values.web.service }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        network/yprov-default: "true"
+        service: {{ .Values.web.service }}
+    spec:
+      containers:
+        - env:
+            - name: {{ .Values.web.env.user.name }}
+              value: {{ .Values.web.env.user.value }}
+            - name: {{ .Values.web.env.password.name }}
+              value: {{ .Values.web.env.password.value }}
+          image: {{ .Values.web.image }}
+          livenessProbe:
+            exec:
+              command:
+                - wget
+                - --no-verbose
+                - --tries=1
+                - --spider
+                - http://web:3000/
+            initialDelaySeconds: 30
+            failureThreshold: 5
+            periodSeconds: 30
+            timeoutSeconds: 10
+          name: {{ .Values.web.name }}
+          ports:
+            - containerPort: {{ .Values.web.ports.targetPort }}
+              hostPort: {{ .Values.web.ports.port }}
+              protocol: TCP
+          resources: {}
+          volumeMounts:
+            - mountPath: /app/conf
+              name: {{ .Values.storages.yprov.name }}
+      restartPolicy: Always
+      volumes:
+        - name: {{ .Values.storages.yprov.name }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.storages.yprov.name }}
+status: {}

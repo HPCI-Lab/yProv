@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    service: {{ .Values.storages.neo4j.data.service }}
+  name: {{ .Values.storages.neo4j.data.name }}
+spec:
+  accessModes:
+    - {{ .Values.storages.neo4j.data.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.storages.neo4j.data.resources.requirements.storage }}
+status: {}

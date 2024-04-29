@@ -1,0 +1,102 @@
+openapi: 3.0.0
+info:
+  title: yProv Documents
+  description: yProv Documents API
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000/api/v0/documents
+    description: yProv Documents
+
+paths:
+  /:
+    get:
+      summary: Returns all documents
+      description: Does not require authentication
+      responses:
+        '200':
+          description: List of documents is returned
+  /{string_id}:
+    parameters:
+      - in: path
+        name: string_id
+        required: true
+        schema:
+          type: string
+          description: Name of document, minimum three characters
+          example: foo
+    get:
+      summary: Returns specified document
+      responses:
+        '200':
+          description: Returns content of document
+          content:
+            application/json:
+              schema:
+                type: object
+        '403':
+          description: User does not have permission to operate on this document
+        '404':
+          description: Document not found
+    put:
+      summary: Creates new document
+      requestBody:
+        description: Structure of new document
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Document uploaded
+        '400':
+          description: Document not valid
+    delete:
+      summary: Deletes document
+      responses:
+        '200':
+          description: Document deleted
+        '403':
+          description: User does not have permission to operate on this document
+        '404':
+          description: Document not found
+        '500':
+          description: Document error
+  /{string_id}/addUser:
+    parameters:
+      - in: path
+        name: string_id
+        required: true
+        schema:
+          type: string
+          description: Name of document, minimum three characters
+          example: foo
+    put:
+      summary: Add document access to other user
+      requestBody:
+        description: User and type of permission
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                {string_id}:
+                  type: string
+                  example: second_user
+                  description: Different from current user
+                level:
+                  type: string
+                  example: r
+                  enum: [o, r, w]
+                  description: A document can only have one owner
+      responses:
+        '201':
+          description: Successfully added access to the document
+        '400':
+          description: Data not valid
+        '403':
+          description: Permission issue or user not registered
+        '404':
+          description: Document not found
+        

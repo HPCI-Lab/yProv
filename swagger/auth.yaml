@@ -1,0 +1,64 @@
+openapi: 3.0.0
+info:
+  title: yProv Auth
+  description: yProv Authorization API
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000/api/v0/auth
+    description: yProv Auth
+
+paths:
+  /register:
+    post:
+      summary: Registers user to the service
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: mario_rossi
+                password:
+                  type: string
+                  example: Password123
+      responses:
+        '201':
+          description: User created
+        '400':
+          description: Data not valid. Requires username and password fields and not blank
+        '401':
+          description: Registration failed
+  /login:
+    post:
+      summary: Performs user login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: mario_rossi
+                password:
+                  type: string
+                  example: Password123
+      responses:
+        '200':
+          description: Returns jwt token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: Bearer token
+        '400':
+          description: Data not valid. Requires username and password fields and not blank
+        '401':
+          description: User not registered

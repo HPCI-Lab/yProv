@@ -4,11 +4,13 @@ WORKDIR /app
 
 RUN python -m pip install --upgrade pip
 
-COPY . .
+COPY requirements.txt .
 
 RUN pip install -r requirements.txt
 
-ENV PORT=3000 ADDRESS='host.docker.internal:7687' SCHEME='bolt' USER='neo4j' PASSWORD='password'
+COPY . .
+
+ENV PORT=3000 SCHEME="bolt" ADDRESS='db:7687'
 
 EXPOSE 3000
 

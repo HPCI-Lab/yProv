@@ -1,6 +1,7 @@
 from prov.model import first
 from prov.serializers.provjson import *
 
+
 # from encode_json_container at <https://github.com/trungdong/prov/blob/master/src/prov/serializers/provjson.py>
 def encode_attributes(record):
     record_json = {}
@@ -27,26 +28,26 @@ def encode_attributes(record):
                     )
     return record_json
 
-def prov_element_to_json(prov_element):
 
+def prov_element_to_json(prov_element):
     rec_label = PROV_N_MAP[prov_element.get_type()]
     identifier = str(prov_element._identifier)
     attributes = encode_attributes(prov_element)
 
     return {
-        rec_label : {
-            identifier : attributes
+        rec_label: {
+            identifier: attributes
         }
     }
 
-def prov_relation_to_json(prov_element):
 
+def prov_relation_to_json(prov_element):
     rec_label = PROV_N_MAP[prov_element.get_type()]
     identifier = str(prov_element._identifier)
     attributes = encode_attributes(prov_element)
 
     return {
-        rec_label : {
-            identifier : attributes
+        rec_label: {
+            identifier: attributes
         }
     }
