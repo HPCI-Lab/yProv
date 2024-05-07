@@ -6,41 +6,54 @@ info:
 servers:
   - url: http://localhost:3000/api/v0/documents
     description: yProv Documents
-
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - bearerAuth: []
 paths:
   /:
     get:
-      summary: Returns all documents
+      summary: Return all documents
+      security: []
       description: Does not require authentication
       responses:
         '200':
           description: List of documents is returned
-  /{string_id}:
+  /{doc_id}:
     parameters:
       - in: path
-        name: string_id
+        name: doc_id
         required: true
         schema:
           type: string
           description: Name of document, minimum three characters
-          example: foo
+          example: "pta"
     get:
-      summary: Returns specified document
+      summary: Return specified document
+      security: []
+      description: Does not require authentication
       responses:
         '200':
-          description: Returns content of document
+          description: Return content of document
           content:
             application/json:
               schema:
                 type: object
-        '403':
-          description: User does not have permission to operate on this document
         '404':
           description: Document not found
     put:
-      summary: Creates new document
+      summary: Create new document
       requestBody:
-        description: Structure of new document
+        description: |
+          Structure of new document.
+          You can provide JSON directly.
+          You can submit a JSON file using tools like curl with the `-d @filename.json` option.
+          If providing JSON directly, use the `application/json` content type.
+          If submitting a file, ensure it contains valid JSON data.
         required: true
         content:
           application/json:
@@ -52,7 +65,7 @@ paths:
         '400':
           description: Document not valid
     delete:
-      summary: Deletes document
+      summary: Delete document
       responses:
         '200':
           description: Document deleted
@@ -62,34 +75,37 @@ paths:
           description: Document not found
         '500':
           description: Document error
-  /{string_id}/addUser:
+  /{doc_id}/permissions:
     parameters:
       - in: path
-        name: string_id
+        name: doc_id
         required: true
         schema:
           type: string
-          description: Name of document, minimum three characters
-          example: foo
+          description: ID of the document to modify permissions for, minimum three characters
+          example: "pta"
     put:
-      summary: Add document access to other user
+      summary: Add or update user permissions for a document
       requestBody:
-        description: User and type of permission
+        description: Specifies the user and their permission level
         required: true
         content:
           application/json:
             schema:
               type: object
               properties:
-                {string_id}:
+                {doc_id}:
                   type: string
-                  example: second_user
-                  description: Different from current user
+                  example: "second_user"
+                  description: User ID to grant permissions to, different from the current user
                 level:
                   type: string
-                  example: r
-                  enum: [o, r, w]
-                  description: A document can only have one owner
+                  example: "r"
+                  enum: ["r", "w"]
+                  description: |
+                    Permission level to grant.
+                    - "r": Read
+                    - "w": Write
       responses:
         '201':
           description: Successfully added access to the document
@@ -99,4 +115,29 @@ paths:
           description: Permission issue or user not registered
         '404':
           description: Document not found
-        
+  /{doc_id}/subgraph:
+    parameters:
+    - in: path
+      name: doc_id
+      required: true
+      schema:
+        type: string
+        description: Name of document, mininum three characters
+    - in: query
+      name: id
+      required: true
+      schema:
+        type: string
+        description: Name of element (entity, agent, activity)
+        example: "ophidia:http://127.0.0.1/ophidia/66/7191"
+    get:
+      summary: Get subgraph from document
+      security: []
+      description: Does not require authentication
+      responses:
+        '200':
+          description: Successfully extracted sub-graph
+        '404':
+          description: ID is missing or document is not found
+        '500':
+          description: Database error

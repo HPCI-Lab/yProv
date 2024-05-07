@@ -30,10 +30,54 @@ curl -X GET  http://localhost:3000/api/v0/documents -H "Content-Type: applicatio
  
 - Get the full document associated to the PTA
 ```
-curl -X GET  http://localhost:3000/api/v0/documents/pta -H "Content-Type: application/json" -H 'Authorization: Bearer <token>
+curl -X GET  http://localhost:3000/api/v0/documents/pta -H "Content-Type: application/json"
 ```
 
 - Given a specific node identified by its id (e.g., ophidia:http://127.0.0.1/ophidia/66/7191), get the corresponding subgraph
 ```
-curl -X GET  http://localhost:3000/api/v0/documents/pta/subgraph?id=ophidia:http://127.0.0.1/ophidia/66/7191 -H 'Authorization: Bearer <token>'
+curl -X GET  http://localhost:3000/api/v0/documents/pta/subgraph?id=ophidia:http://127.0.0.1/ophidia/66/7191
+```
+
+Alternatively, you can use the `yProv CLI` to interact with the `yProv` service. Please refer to [this documentation](https://github.com/HPCI-Lab/yProv-CLI/tree/main) to install the CLI. 
+These are the corresponding CLI commands to get started with the PTA use case.
+
+- Set up the environment variables
+```
+export YPROV_ADDR=http://localhost
+export YPROV_PORT=3000
+```
+
+- Register to the yProv service
+```
+yprov-cli auth register --user myUsername --password myPassword
+```
+
+- Log in to the service to get a valid token for performing all the other operations
+```
+yprov-cli auth login --user myUsername --password myPassword
+```
+
+- Export the `YPROV_TOKEN` (not needed for read operations)
+```
+export YPROV_TOKEN=[TOKEN]
+```
+
+- Load the JSON document associated to the PTA use case
+```
+yprov-cli documents create --doc-id pta --file @pta.json
+```
+
+- Get the list of all the available provenance documents (this is the only operations not requiring a token)
+```
+yprov-cli documents get
+```
+ 
+- Get the full document associated to the PTA
+```
+yprov-cli documents get --doc-id pta
+```
+
+- Given a specific node identified by its id (e.g., ophidia:http://127.0.0.1/ophidia/66/7191), get the corresponding subgraph
+```
+yprov-cli documents subgraph --doc-id pta --e-id ophidia:http://127.0.0.1/ophidia/66/7191
 ```

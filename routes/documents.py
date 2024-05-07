@@ -75,12 +75,12 @@ def graph_to_prov(prov_document, nodes, edges):
 
 # Read
 @documents_bp.route('/<string:doc_id>', methods=['GET'])
-@auth_required
+#@auth_required
 def get_document(doc_id):
-    token = request.headers["Authorization"].split(" ")[1]
-    user = get_user(token)
-    if not has_user_permission(user, doc_id, 'r', docs=True):
-        return jsonify({'error': "User does not have permission to execute this operation on this document!"}), 403
+    #token = request.headers["Authorization"].split(" ")[1]
+    #user = get_user(token)
+    #if not has_user_permission(user, doc_id, 'r', docs=True):
+    #    return jsonify({'error': "User does not have permission to execute this operation on this document!"}), 403
 
     # get db and check if it exists
     graph = neo4j.get_db(doc_id)
@@ -106,14 +106,13 @@ def get_document(doc_id):
 
 # Get subgraph
 @documents_bp.route('/<string:doc_id>/subgraph', methods=['GET'])
-@auth_required                                                
+#@auth_required                                                
 def get_subgraph(doc_id):  
 
-    token = request.headers["Authorization"].split(" ")[1]
-    user = get_user(token)
-    
-    if not has_user_permission(user, doc_id, 'r', docs=True):
-        return jsonify({'error': "User does not have permission to execute this operation on this document!"}), 403
+    #token = request.headers["Authorization"].split(" ")[1]
+    #user = get_user(token)
+    #if not has_user_permission(user, doc_id, 'r', docs=True):
+    #    return jsonify({'error': "User does not have permission to execute this operation on this document!"}), 403
     
     e_id = request.args.get('id')
     if not e_id:

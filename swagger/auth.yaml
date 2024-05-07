@@ -10,7 +10,7 @@ servers:
 paths:
   /register:
     post:
-      summary: Registers user to the service
+      summary: Register user to the service
       requestBody:
         required: true
         content:
@@ -18,12 +18,12 @@ paths:
             schema:
               type: object
               properties:
-                username:
+                user:
                   type: string
-                  example: mario_rossi
+                  example: "myUsername"
                 password:
                   type: string
-                  example: Password123
+                  example: "myPassword"
       responses:
         '201':
           description: User created
@@ -41,15 +41,15 @@ paths:
             schema:
               type: object
               properties:
-                username:
+                user:
                   type: string
-                  example: mario_rossi
+                  example: "myUsername"
                 password:
                   type: string
-                  example: Password123
+                  example: "myPassword"
       responses:
         '200':
-          description: Returns jwt token
+          description: Return jwt token
           content:
             application/json:
               schema:

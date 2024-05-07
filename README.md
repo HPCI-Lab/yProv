@@ -76,6 +76,13 @@ You can also build the yProv image by your own (using the available ```Dockerfil
    ./deploy_service.sh 
 ```
 
+## yProv CLI
+yProv includes a `Command Line Interface` to interact with the service in a more convenient way.
+Please refer to [this documentation](https://github.com/HPCI-Lab/yProv-CLI/tree/main) to install the CLI.
+
+## Get started
+You can find some ready-to-use examples to get started with yProv under the `examples` folder.
+
 ## Advanced options
 
 #### Load Neo4j plugins 

@@ -80,12 +80,12 @@ def create_relation(doc_id):
 
 # Read
 @relations_bp.route('/<string:r_id>', methods=['GET'])
-@auth_required
+#@auth_required
 def get_relation(doc_id, r_id):
-    token = request.headers["Authorization"].split(" ")[1]
-    user = get_user(token)
-    if not has_user_permission(user, doc_id, 'r'):
-        return jsonify({'error': "User does not have permission to execute this operation on this document!"}), 403
+    #token = request.headers["Authorization"].split(" ")[1]
+    #user = get_user(token)
+    #if not has_user_permission(user, doc_id, 'r'):
+    #    return jsonify({'error': "User does not have permission to execute this operation on this document!"}), 403
 
     try:
         graph = neo4j.get_db(doc_id)
