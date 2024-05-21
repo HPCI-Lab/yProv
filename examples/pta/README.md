@@ -91,3 +91,14 @@ yprov-cli documents get --doc-id pta
 ```
 yprov-cli documents subgraph --doc-id pta --e-id ophidia:http://127.0.0.1/ophidia/66/7191
 ```
+
+- Get the list of all the entities in the PTA document
+```
+yprov-cli entities get --doc-id pta
+```
+
+- Get the list of all the activities in the PTA document
+```
+yprov-cli activities get --doc-id pta
+```
+
