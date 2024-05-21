@@ -61,6 +61,28 @@ def create_element(doc_id):
 
     return jsonify({'message': "Element created"}), 201
 
+# Get list
+@agents_bp.route('', methods=['GET'])
+def get_list_of_agents(doc_id):    
+
+    try:                    
+        graph = neo4j.get_db(doc_id)
+    except:         
+        return jsonify({'error': "DB error"}), 500
+                        
+    try:                 
+        assert graph     
+    except AssertionError:
+        return jsonify({'error': "Document not found"}), 404
+                 
+    try:
+        query = "MATCH(n:Agent) RETURN n.id"
+        agents = graph.run(query).data()
+        agents_ids = [i["n.id"] for i in agents]
+    except:                                      
+        return jsonify({'error': "DB error"}), 500
+
+    return jsonify({'result': agents_ids}), 200
 
 # Read
 @agents_bp.route('/<string:e_id>', methods=['GET'])

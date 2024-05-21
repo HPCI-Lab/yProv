@@ -62,6 +62,30 @@ def create_entity(doc_id):
     return jsonify({'message': "Entity created"}), 201
 
 
+# Get list
+@entities_bp.route('', methods=['GET'])
+def get_list_of_entities(doc_id):    
+
+    try:                    
+        graph = neo4j.get_db(doc_id)
+    except:         
+        return jsonify({'error': "DB error"}), 500
+                        
+    try:                 
+        assert graph     
+    except AssertionError:
+        return jsonify({'error': "Document not found"}), 404
+                 
+    try:
+        query = "MATCH(n:Entity) RETURN n.id"
+        entities = graph.run(query).data()
+        entities_ids = [i["n.id"] for i in entities]
+    except:                                      
+        return jsonify({'error': "DB error"}), 500
+
+    return jsonify({'result': entities_ids}), 200
+
+
 # Read
 @entities_bp.route('/<string:e_id>', methods=['GET'])
 #@auth_required

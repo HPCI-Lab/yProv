@@ -61,6 +61,28 @@ def create_element(doc_id):
 
     return jsonify({'message': "Element created"}), 201
 
+# Get list
+@activities_bp.route('', methods=['GET'])
+def get_list_of_activities(doc_id):    
+
+    try:                    
+        graph = neo4j.get_db(doc_id)
+    except:         
+        return jsonify({'error': "DB error"}), 500
+                        
+    try:                 
+        assert graph     
+    except AssertionError:
+        return jsonify({'error': "Document not found"}), 404
+                 
+    try:
+        query = "MATCH(n:Activity) RETURN n.id"
+        activities = graph.run(query).data()
+        activities_ids = [i["n.id"] for i in activities]
+    except:                                      
+        return jsonify({'error': "DB error"}), 500
+
+    return jsonify({'result': activities_ids}), 200
 
 # Read
 @activities_bp.route('/<string:e_id>', methods=['GET'])
