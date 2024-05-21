@@ -38,6 +38,16 @@ curl -X GET  http://localhost:3000/api/v0/documents/pta -H "Content-Type: applic
 curl -X GET  http://localhost:3000/api/v0/documents/pta/subgraph?id=ophidia:http://127.0.0.1/ophidia/66/7191
 ```
 
+- Get the list of all the entities in the PTA document
+```
+curl -X GET  http://localhost:3000/api/v0/documents/pta/entities
+```
+
+- Get the list of all the activities in the PTA document
+```
+curl -X GET  http://localhost:3000/api/v0/documents/pta/activities
+```
+
 Alternatively, you can use the `yProv CLI` to interact with the `yProv` service. Please refer to [this documentation](https://github.com/HPCI-Lab/yProv-CLI/tree/main) to install the CLI. 
 These are the corresponding CLI commands to get started with the PTA use case.
 
