@@ -33,11 +33,6 @@ curl -X GET  http://localhost:3000/api/v0/documents -H "Content-Type: applicatio
 curl -X GET  http://localhost:3000/api/v0/documents/pta -H "Content-Type: application/json"
 ```
 
-- Given a specific node identified by its id (e.g., ophidia:http://127.0.0.1/ophidia/66/7191), get the corresponding subgraph
-```
-curl -X GET  http://localhost:3000/api/v0/documents/pta/subgraph?id=ophidia:http://127.0.0.1/ophidia/66/7191
-```
-
 - Get the list of all the entities in the PTA document
 ```
 curl -X GET  http://localhost:3000/api/v0/documents/pta/entities
@@ -48,6 +43,35 @@ curl -X GET  http://localhost:3000/api/v0/documents/pta/entities
 curl -X GET  http://localhost:3000/api/v0/documents/pta/activities
 ```
 
+#### Subgraph functionality
+The `subgraph` functionality allows retrieving the collection of nodes and relationships in the subgraph related to a specific node provided as input.
+Two more parameters can be provided to customize the request:
+- `direction`: the direction to traverse (U = upwards/outgoing, D = downwards/incoming)
+- `depth`: the maximum number of hops in the traversal (an integer)
+
+Some examples for the node identified by `id = ophidia:http://127.0.0.1/ophidia/66/7191` are provided below.
+
+- Get the full subgraph upwards (`direction=U`,`depth` not provided -> all the nodes and relationships)
+```
+curl -X GET  "http://localhost:3000/api/v0/documents/pta/subgraph?id=ophidia:http://127.0.0.1/ophidia/66/7191&direction=U"
+```
+
+- Get the 3-hop subgraph from the specified node downwards (`direction=D`,`depth=3`)
+```
+curl -X GET  "http://localhost:3000/api/v0/documents/pta/subgraph?id=ophidia:http://127.0.0.1/ophidia/66/7191&direction=D&depth=3"
+```
+
+- Get the 3-hop subgraph in both directions (basically, a 3-hop radius neighbourhood centered around the specified node)
+```
+curl -X GET  "http://localhost:3000/api/v0/documents/pta/subgraph?id=ophidia:http://127.0.0.1/ophidia/66/7191&depth=3"
+```
+
+- If neither `direction` nor `depth` are specified, the full graph/document is returned
+```
+curl -X GET  "http://localhost:3000/api/v0/documents/pta/subgraph?id=ophidia:http://127.0.0.1/ophidia/66/7191"
+```
+
+## yProv CLI
 Alternatively, you can use the `yProv CLI` to interact with the `yProv` service. Please refer to [this documentation](https://github.com/HPCI-Lab/yProv-CLI/tree/main) to install the CLI. 
 These are the corresponding CLI commands to get started with the PTA use case.
 
