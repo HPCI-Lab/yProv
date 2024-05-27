@@ -8,7 +8,10 @@ def prov_element_to_node(prov_element):
     # parse attr to props
     props = dict()
     for attr in prov_element.attributes:
-        props[encode_value(attr[0])] = encode_value(attr[1])
+        if encode_value(attr[0]) == "prov:startTime" or encode_value(attr[0]) == "prov:endTime":
+            props[encode_value(attr[0])] = encode_value(attr[1]).to_native()
+        else:
+            props[encode_value(attr[0])] = encode_value(attr[1])
     labels = [node_label(prov_element), ELEMENT_NODE_PRIMARY_LABEL]
     return Node(
         *labels,
