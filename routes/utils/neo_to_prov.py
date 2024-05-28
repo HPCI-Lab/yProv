@@ -51,7 +51,7 @@ def node_to_prov_element(node, bundle):
                 attributes[attr] = value
             else:
                 other_attributes.append(
-                    (attr, encode_literal(value))
+                    (attr, encode_literal(str(value)))
                 )
         else:
             rec_id = value
