@@ -4,6 +4,9 @@ from prov.graph import INFERRED_ELEMENT_CLASS
 from py2neo.data import Subgraph, Node
 from py2neo.matching import NodeMatcher, RelationshipMatcher
 # from prov2neo.encode import encode_graph
+from prov.model import ProvUsage, ProvGeneration, ProvDerivation
+#from prov.constants import *
+from prov.identifier import Identifier, QualifiedName, Namespace
 
 from extensions import neo4j
 from .utils import (
@@ -22,6 +25,46 @@ from .utils import (
 from .utils.user_handling import *
 
 documents_bp = Blueprint('documents', __name__)
+
+def add_usage_relation(qn1,qn2,node_map,relation):
+            
+    PROV = Namespace("prov", "http://www.w3.org/ns/prov#")                                                  
+    a = QualifiedName(PROV,"activity")                                                                      
+    e = QualifiedName(PROV,"entity")                                                                        
+    t = QualifiedName(PROV,"time")    
+
+    rel_usage = ProvUsage(ProvDocument(),None,attributes=((a,qn1),(e,qn2),(t,None)))
+
+    if qn1 not in node_map:                                                                             
+        node_map[qn1] = INFERRED_ELEMENT_CLASS[relation.formal_attributes[2][0]](None, qn1)             
+    if qn2 not in node_map:                                                                             
+        node_map[qn2] = INFERRED_ELEMENT_CLASS[relation.formal_attributes[1][0]](None, qn2)                               
+                                                                                                                    
+    start_node = node_map[qn1]                                                                              
+    end_node = node_map[qn2]                                                                                
+    rel = prov_relation_to_edge(rel_usage, start_node, end_node)
+
+    return rel
+
+def add_generation_relation(qn1,qn2,node_map,relation):
+    
+    PROV = Namespace("prov", "http://www.w3.org/ns/prov#")                                                  
+    a = QualifiedName(PROV,"activity")                                                                      
+    e = QualifiedName(PROV,"entity")                                                                        
+    t = QualifiedName(PROV,"time")    
+
+    rel_generation = ProvGeneration(ProvDocument(),None,attributes=((e,qn1),(a,qn2),(t,None)))
+
+    if qn1 not in node_map:
+        node_map[qn1] = INFERRED_ELEMENT_CLASS[relation.formal_attributes[0][0]](None, qn1)
+    if qn2 not in node_map:
+        node_map[qn2] = INFERRED_ELEMENT_CLASS[relation.formal_attributes[2][0]](None, qn2)
+
+    start_node = node_map[qn1]
+    end_node = node_map[qn2]
+    rel = prov_relation_to_edge(rel_generation, start_node, end_node)
+
+    return rel
 
 
 def prov_to_graph(prov_document):
@@ -56,6 +99,15 @@ def prov_to_graph(prov_document):
             rel = prov_relation_to_edge(relation, start_node, end_node)
 
             graph = graph | rel
+
+            # wasDerivedFrom -> add Used and wasGeneratedBy
+            if str(relation.get_type()) == "prov:Derivation":
+                activity = relation.formal_attributes[2][1]
+                if activity:
+                    rel = add_usage_relation(activity,attr_pair_2[1],node_map,relation)
+                    graph = graph | rel
+                    rel = add_generation_relation(attr_pair_1[1],activity,node_map,relation)
+                    graph = graph | rel 
 
     return graph
 
