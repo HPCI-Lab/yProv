@@ -1,11 +1,16 @@
 openapi: 3.0.0
 info:
-  title: yProv Documents
-  description: yProv Documents API
-  version: 1.0.0
+  title: yProv RESTful API
+  description: RESTful API for interacting with the yProv service
+  version: '1.0'
 servers:
-  - url: http://localhost:3000/api/v0/documents
-    description: yProv Documents
+  - url: http://{address}:{port}/api/v0/documents
+    variables:
+      address:
+        default: 'localhost'
+      port:
+        default: '3000'
+    description: yProv API
 components:
   securitySchemes:
     bearerAuth:
@@ -33,12 +38,12 @@ paths:
           description: Name of document, minimum three characters
           example: "pta"
     get:
-      summary: Return specified document
+      summary: Return the specified document according to the W3C PROV standard
       security: []
       description: Does not require authentication
       responses:
         '200':
-          description: Return content of document
+          description: Return the requested document
           content:
             application/json:
               schema:
@@ -46,7 +51,7 @@ paths:
         '404':
           description: Document not found
     put:
-      summary: Create new document
+      summary: Create a new document
       requestBody:
         description: |
           Structure of new document.
@@ -70,11 +75,11 @@ paths:
         '200':
           description: Document deleted
         '403':
-          description: User does not have permission to operate on this document
+          description: User does not have permission to execute this operation on this document
         '404':
           description: Document not found
         '500':
-          description: Document error
+          description: DB error
   /{doc_id}/permissions:
     parameters:
       - in: path
@@ -82,7 +87,7 @@ paths:
         required: true
         schema:
           type: string
-          description: ID of the document to modify permissions for, minimum three characters
+          description: document to modify permissions for
           example: "pta"
     put:
       summary: Add or update user permissions for a document
@@ -136,8 +141,325 @@ paths:
       description: Does not require authentication
       responses:
         '200':
-          description: Successfully extracted sub-graph
+          description: Return the requested subgraph
         '404':
-          description: ID is missing or document is not found
+          description: ID is missing or document not found
         '500':
-          description: Database error
+          description: DB error
+  /{doc_id}/entities:
+    parameters:
+    - in: path
+      name: doc_id
+      required: true
+      schema:
+        type: string
+        description: Name of the document
+    get:
+      summary: Get the list of all entities in the document
+      security: []
+      description: Does not require authentication
+      responses:
+        '200':
+          description: List of entities in the document
+        '404':
+          description: Document not found
+        '500':
+          description: DB error
+  /{doc_id}/activities:
+    parameters:
+    - in: path
+      name: doc_id
+      required: true
+      schema:
+        type: string
+        description: Name of the document
+    get:
+      summary: Get the list of all activities in the document
+      security: []
+      description: Does not require authentication
+      responses:
+        '200':
+          description: List of activities in the document
+        '404':
+          description: Document not found
+        '500':
+          description: DB error
+  /{doc_id}/agents:
+    parameters:
+    - in: path
+      name: doc_id
+      required: true
+      schema:
+        type: string
+        description: Name of the document
+    get:
+      summary: Get the list of all agents in the document
+      security: []
+      description: Does not require authentication
+      responses:
+        '200':
+          description: List of agents in the document
+        '404':
+          description: Document not found
+        '500':
+          description: DB error
+  /{doc_id}/entities/{e_id}:
+    parameters:
+      - in: path
+        name: doc_id
+        required: true
+        schema:
+          type: string
+          description: Name of the document
+          example: "pta"
+      - in: path
+        name: e_id
+        required: true
+        schema:
+          type: string
+          description: Entity ID
+          example: "test"
+    get:
+      summary: Return the specified entity
+      security: []
+      description: Does not require authentication
+      responses:
+        '200':
+          description: Return the requested entity according to the W3C PROV standard
+          content:
+            application/json:
+              schema:
+                type: object
+        '404':
+          description: Document not found
+        '500':
+          description: DB error
+    put:
+      summary: Add a new entity
+      requestBody:
+        description: |
+          Structure of new entity.
+          You can provide JSON directly.
+          You can submit a JSON file using tools like curl with the `-d @filename.json` option.
+          If providing JSON directly, use the `application/json` content type.
+          If submitting a file, ensure it contains valid JSON data.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Entity added
+        '400':
+          description: Document not valid
+        '404':
+          description: Document not found
+        '500':
+          description: DB error
+    delete:
+      summary: Delete an entity
+      responses:
+        '200':
+          description: Entity deleted
+        '403':
+          description: User does not have permission to operate on this document
+        '404':
+          description: Entity not found
+        '500':
+          description: DB error
+  /{doc_id}/activities/{e_id}:
+    parameters:
+      - in: path
+        name: doc_id
+        required: true
+        schema:
+          type: string
+          description: Name of the document
+          example: "pta"
+      - in: path
+        name: e_id
+        required: true
+        schema:
+          type: string
+          description: Activity ID
+          example: "test"
+    get:
+      summary: Return the specified activity
+      security: []
+      description: Does not require authentication
+      responses:
+        '200':
+          description: Return the requested activity according to the W3C PROV standard
+          content:
+            application/json:
+              schema:
+                type: object
+        '404':
+          description: Document not found
+        '500':
+          description: DB error
+    put:
+      summary: Add a new activity
+      requestBody:
+        description: |
+          Structure of new activity.
+          You can provide JSON directly.
+          You can submit a JSON file using tools like curl with the `-d @filename.json` option.
+          If providing JSON directly, use the `application/json` content type.
+          If submitting a file, ensure it contains valid JSON data.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Activity added
+        '400':
+          description: Document not valid
+        '404':
+          description: Document not found
+        '500':
+          description: DB error
+    delete:
+      summary: Delete an entity
+      responses:
+        '200':
+          description: Activity deleted
+        '403':
+          description: User does not have permission to operate on this document
+        '404':
+          description: Activity not found
+        '500':
+          description: DB error
+  /{doc_id}/agents/{a_id}:
+    parameters:
+      - in: path
+        name: doc_id
+        required: true
+        schema:
+          type: string
+          description: Name of the document
+          example: "pta"
+      - in: path
+        name: a_id
+        required: true
+        schema:
+          type: string
+          description: Agent ID
+          example: "test"
+    get:
+      summary: Return the specified agent
+      security: []
+      description: Does not require authentication
+      responses:
+        '200':
+          description: Return the requested agent according to the W3C PROV standard
+          content:
+            application/json:
+              schema:
+                type: object
+        '404':
+          description: Document not found
+        '500':
+          description: DB error
+    put:
+      summary: Add a new agent
+      requestBody:
+        description: |
+          Structure of new agent.
+          You can provide JSON directly.
+          You can submit a JSON file using tools like curl with the `-d @filename.json` option.
+          If providing JSON directly, use the `application/json` content type.
+          If submitting a file, ensure it contains valid JSON data.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Agent added
+        '400':
+          description: Document not valid
+        '404':
+          description: Document not found
+        '500':
+          description: DB error
+    delete:
+      summary: Delete an agent
+      responses:
+        '200':
+          description: Agent deleted
+        '403':
+          description: User does not have permission to operate on this document
+        '404':
+          description: Agent not found
+        '500':
+          description: DB error
+  /{doc_id}/relations/{r_id}:
+    parameters:
+      - in: path
+        name: doc_id
+        required: true
+        schema:
+          type: string
+          description: Name of the document
+          example: "pta"
+      - in: path
+        name: r_id
+        required: true
+        schema:
+          type: string
+          description: Relation ID
+          example: "test"
+    get:
+      summary: Return the specified relation
+      security: []
+      description: Does not require authentication
+      responses:
+        '200':
+          description: Return the requested relation according to the W3C PROV standard
+          content:
+            application/json:
+              schema:
+                type: object
+        '404':
+          description: Document not found
+        '500':
+          description: DB error
+    put:
+      summary: Add a new relation
+      requestBody:
+        description: |
+          Structure of new relation.
+          You can provide JSON directly.
+          You can submit a JSON file using tools like curl with the `-d @filename.json` option.
+          If providing JSON directly, use the `application/json` content type.
+          If submitting a file, ensure it contains valid JSON data.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Relation added
+        '400':
+          description: Document not valid
+        '404':
+          description: Document not found
+        '500':
+          description: DB error
+    delete:
+      summary: Delete a relation
+      responses:
+        '200':
+          description: Relation deleted
+        '403':
+          description: User does not have permission to operate on this document
+        '404':
+          description: Relation not found
+        '500':
+          description: DB error

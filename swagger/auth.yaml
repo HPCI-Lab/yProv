@@ -4,13 +4,18 @@ info:
   description: yProv Authorization API
   version: 1.0.0
 servers:
-  - url: http://localhost:3000/api/v0/auth
-    description: yProv Auth
+  - url: http://{address}:{port}/api/v0/auth
+    variables:
+      address:
+        default: 'localhost'
+      port:
+        default: '3000'
+    description: yProv Authorization API
 
 paths:
   /register:
     post:
-      summary: Register user to the service
+      summary: Register to the service
       requestBody:
         required: true
         content:
@@ -26,14 +31,14 @@ paths:
                   example: "myPassword"
       responses:
         '201':
-          description: User created
+          description: User registered
         '400':
-          description: Data not valid. Requires username and password fields and not blank
+          description: Data not valid or username already available
         '401':
           description: Registration failed
   /login:
     post:
-      summary: Performs user login
+      summary: Log in to the service
       requestBody:
         required: true
         content:
@@ -59,6 +64,6 @@ paths:
                     type: string
                     description: Bearer token
         '400':
-          description: Data not valid. Requires username and password fields and not blank
+          description: Data not valid
         '401':
           description: User not registered
