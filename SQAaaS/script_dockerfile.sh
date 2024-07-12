@@ -73,22 +73,8 @@ for i in {1..15}; do
     sleep 10
 done
 
-# Run tests
-echo "Running Quality Tests"
-cd /app
-python3 -m pytest -v
+cd /app/SQAaaS
+echo "Read to perform tests"
 
-# Clean up container, volumes and network
-
-echo "Clean up container, volumes and network"
-docker stop web
-docker stop db
-docker rm web
-docker rm db
-docker volume rm neo4j_data
-docker volume rm neo4j_logs
-docker volume rm yprov_data
-docker network disconnect yprov_net unittests
-docker network rm yprov_net
-docker stop unittests
-docker rm unittests
+# Keep the container running
+tail -f /dev/null

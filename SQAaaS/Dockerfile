@@ -12,7 +12,7 @@ WORKDIR /app
 
 # Clean and clone updated GitHub repo
 RUN rm -rf /app/* && \
-    git clone https://github.com/HPCI-Lab/sqaaas.git .
+    git clone --branch sqa https://github.com/HPCI-Lab/yProv.git .
 
 # Install requirements
 COPY requirements.txt /app/requirements.txt
