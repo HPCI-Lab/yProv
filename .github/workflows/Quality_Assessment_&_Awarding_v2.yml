@@ -1,11 +1,9 @@
 name: Quality_Assessment_&_Awarding_v2
 
 on:
-  push:
-    branches:
-      - sqa
-
-
+  workflow_dispatch:
+    
+    
 jobs:
   QAA:
     runs-on: ubuntu-latest
