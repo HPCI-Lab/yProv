@@ -9,7 +9,7 @@ on:
       - sqa
 
 jobs:
-  tests:
+  QAA:
     runs-on: ubuntu-latest
     
     steps:
@@ -19,15 +19,15 @@ jobs:
           name: unittests_pytest
           tool: commands
           commands: |
-            python3 -m pytest -v
-            docker stop web
-            docker stop db
-            docker rm web
-            docker rm db
-            docker network rm yprov_net
-            docker volume rm neo4j_data
-            docker volume rm neo4j_logs
-            docker volume rm yprov_data
+            pytest
+            stop web
+            stop db
+            rm web
+            rm db
+            network rm yprov_net
+            volume rm neo4j_data
+            volume rm neo4j_logs
+            volume rm yprov_data
           container: hpci/yprov-sqa:1.1
       - name: SQAaaS assessment with unit testing (QC.Uni) step
         uses: eosc-synergy/sqaaas-assessment-action@v2
