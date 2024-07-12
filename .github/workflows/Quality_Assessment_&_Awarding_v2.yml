@@ -1,7 +1,10 @@
 name: Quality_Assessment_&_Awarding_v2
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - sqa
+
 
 jobs:
   QAA:
@@ -15,15 +18,7 @@ jobs:
           tool: commands
           commands: |
             pytest
-            stop web
-            stop db
-            rm web
-            rm db
-            network rm yprov_net
-            volume rm neo4j_data
-            volume rm neo4j_logs
-            volume rm yprov_data
-          container: hpci/yprov-sqa:1.1
+          container: hpci/yprov-sqa:1.2
       - name: SQAaaS assessment with unit testing (QC.Uni) step
         uses: eosc-synergy/sqaaas-assessment-action@v2
         with:
