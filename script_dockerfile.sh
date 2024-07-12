@@ -49,7 +49,11 @@ docker run \
   --env PASSWORD=password \
   hpci/yprov:latest
 
-docker network connect yprov_net unittests
+# Get the current container's hostname (which is the container's ID)
+CONTAINER_ID=$(cat /etc/hostname)
+
+# Connect the current container to the yprov_net network
+docker network connect yprov_net "$CONTAINER_ID"
 
 # Try to connect to Neo4j
 echo "Connection to Neo4j"

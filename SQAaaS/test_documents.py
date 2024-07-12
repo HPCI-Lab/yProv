@@ -1,9 +1,9 @@
 import requests
 
-PATH = "http://localhost:3000/api/v0/documents"
+#PATH = "http://localhost:3000/api/v0/documents"
 
 # path to use to create a docker image
-#PATH = "http://web:3000/api/v0/documents"
+PATH = "http://web:3000/api/v0/documents"
 
 
 TOKEN = None

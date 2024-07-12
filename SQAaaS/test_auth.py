@@ -1,10 +1,10 @@
 import requests
 import test_documents
 
-PATH = "http://localhost:3000/api/v0/auth"
+#PATH = "http://localhost:3000/api/v0/auth"
 
 # path to use to create a docker image
-# PATH = "http://web:3000/api/v0/auth"
+PATH = "http://web:3000/api/v0/auth"
 
 
 

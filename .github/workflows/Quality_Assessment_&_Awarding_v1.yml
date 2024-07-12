@@ -1,13 +1,8 @@
 name: Quality_Assessment_&_Awarding_v1
 
 on:
-  push:
-    branches:
-      - sqa
-  pull_request:
-    branches:
-      - sqa
-
+  workflow_dispatch:
+    
 jobs:
   test:
     runs-on: ubuntu-latest
