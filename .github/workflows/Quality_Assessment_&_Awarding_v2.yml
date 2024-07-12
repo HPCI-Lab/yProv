@@ -5,7 +5,8 @@ on:
     
     
 jobs:
-  QAA:
+  
+  build:
     runs-on: ubuntu-latest
     
     steps:
