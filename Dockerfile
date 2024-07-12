@@ -22,3 +22,6 @@ RUN pip install -r requirements.txt
 COPY script_dockerfile.sh /app/script_dockerfile.sh 
 RUN chmod +x /app/script_dockerfile.sh
 ENTRYPOINT ["/app/script_dockerfile.sh"]
+
+
+

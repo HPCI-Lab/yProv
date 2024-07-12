@@ -1,23 +1,36 @@
 #!/bin/bash
 set -e
 
+# Function for cleanup
+cleanup() {
+    echo "Clean up container, volumes and network"
+    docker stop web || true
+    docker stop db || true
+    docker rm web || true
+    docker rm db || true
+    docker volume rm neo4j_data || true
+    docker volume rm neo4j_logs || true
+    docker volume rm yprov_data || true
+    docker network disconnect yprov_net "$CONTAINER_ID" || true
+    docker network rm yprov_net || true
+}
+
+# Set trap to execute cleanup on exit
+trap cleanup EXIT
+
+
 # Create Docker volumes if not exist
-if [ "$(docker volume ls -q -f name=neo4j_data)" == "" ]; then
-  docker volume create neo4j_data
-fi
+for volume in neo4j_data neo4j_logs yprov_data; do
+  if [ "$(docker volume ls -q -f name=$volume)" == "" ]; then
+    docker volume create $volume
+  fi
+done
 
-if [ "$(docker volume ls -q -f name=neo4j_logs)" == "" ]; then
-  docker volume create neo4j_logs
+# Remove and recreate Docker network if it exists
+if [ "$(docker network ls -q -f name=yprov_net)" != "" ]; then
+  docker network rm yprov_net
 fi
-
-if [ "$(docker volume ls -q -f name=yprov_data)" == "" ]; then
-  docker volume create yprov_data
-fi
-
-# Create Docker network if not exist
-if [ "$(docker network ls -q -f name=yprov_net)" == "" ]; then
-  docker network create yprov_net
-fi
+docker network create yprov_net
 
 # Run Neo4j (db) container
 docker run \
@@ -78,7 +91,14 @@ for i in {1..15}; do
 done
 
 cd /app/SQAaaS
-echo "Read to perform tests"
 
-# Keep the container running
-tail -f /dev/null
+
+echo "Ready to perform tests"
+python3 -m pytest -v
+
+
+
+
+
+
+
