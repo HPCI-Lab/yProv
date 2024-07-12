@@ -1,14 +1,12 @@
 #!/bin/bash
 set -e
 
-# Create Docker volumes: delete if exist and recreate
+# Create Docker volumes if not exist
 for volume in neo4j_data neo4j_logs yprov_data; do
-  if [ "$(docker volume ls -q -f name=$volume)" != "" ]; then
-    docker volume rm $volume || true
+  if [ "$(docker volume ls -q -f name=$volume)" == "" ]; then
+    docker volume create $volume
   fi
-  docker volume create $volume
 done
-
 
 # Remove and recreate Docker network if it exists
 if [ "$(docker network ls -q -f name=yprov_net)" != "" ]; then
@@ -73,9 +71,6 @@ for i in {1..15}; do
     echo "Attempt $i/15: API is not ready"
     sleep 10
 done
-
-cd /app/SQAaaS
-
 
 echo "Ready to perform tests"
 
