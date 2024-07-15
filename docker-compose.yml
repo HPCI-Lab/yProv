@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  qc.uni_wiggy-pear-coyote:
+    build:
+      context: .
+    image: mattiabarbo/prova:1.4
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+      - yprov_data:/app/conf
+    networks:
+      - yprov_net
+    environment:
+      - USER=neo4j
+      - PASSWORD=password
+
+volumes:
+  neo4j_data:
+  neo4j_logs:
+  yprov_data:
+
+networks:
+  yprov_net:

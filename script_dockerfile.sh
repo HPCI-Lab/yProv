@@ -72,7 +72,8 @@ for i in {1..15}; do
     sleep 10
 done
 
-echo "Ready to perform tests"
+# Run pytest on the SQAaaS directory
+pytest /app/SQAaaS
 
-# Execute the command provided as arguments to the script
-exec "$@"
+# Exit script
+exit 0
