@@ -18,6 +18,9 @@ RUN rm -rf /app/* && \
 COPY requirements.txt /app/requirements.txt
 RUN pip install -r requirements.txt
 
+# Copy tests
+COPY SQAaaS /app/SQAaaS
+
 # Make the script_dockerfile.sh script executable and run it
 COPY script_dockerfile.sh /app/script_dockerfile.sh 
 RUN chmod +x /app/script_dockerfile.sh
