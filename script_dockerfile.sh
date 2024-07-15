@@ -74,6 +74,8 @@ done
 
 echo "Ready to perform tests"
 
+pytest
+
 # Keep the container running
 tail -f /dev/null
 
