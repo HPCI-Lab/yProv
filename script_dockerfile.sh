@@ -90,5 +90,7 @@ for i in {1..15}; do
     sleep 10
 done
 
-python3 -m pytest -v
+if [[ "$1" == "test" ]]; then
+    python3 -m pytest -v
+fi
 

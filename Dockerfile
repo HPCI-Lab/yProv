@@ -21,7 +21,9 @@ RUN pip install -r requirements.txt
 # Make the script_dockerfile.sh script executable and run it
 COPY script_dockerfile.sh /app/script_dockerfile.sh 
 RUN chmod +x /app/script_dockerfile.sh
-ENTRYPOINT ["/app/script_dockerfile.sh"]
+
+# Default command to keep the container running
+CMD ["tail", "-f", "/dev/null"]
 
 
 
