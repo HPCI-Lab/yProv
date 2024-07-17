@@ -1,6 +1,22 @@
 #!/bin/bash
 set -e
 
+cleanup() {
+    echo "Clean up container, volumes and network"
+    docker stop web || true
+    docker stop db || true
+    docker rm web || true
+    docker rm db || true
+    docker volume rm neo4j_data || true
+    docker volume rm neo4j_logs || true
+    docker volume rm yprov_data || true
+    docker network disconnect yprov_net "$CONTAINER_ID" || true
+    docker network rm yprov_net || true
+}
+
+# Set trap to execute cleanup on exit
+trap cleanup EXIT
+
 # Create Docker volumes if not exist
 for volume in neo4j_data neo4j_logs yprov_data; do
   if [ "$(docker volume ls -q -f name=$volume)" == "" ]; then
@@ -74,15 +90,3 @@ done
 
 python3 -m pytest -v
 
-# Clean up container, volumes and network
-
-echo "Clean up container, volumes and network"
-docker stop web
-docker stop db
-docker rm web
-docker rm db
-docker volume rm neo4j_data
-docker volume rm neo4j_logs
-docker volume rm yprov_data
-docker network disconnect yprov_net "$CONTAINER_ID"
-docker network rm yprov_net
