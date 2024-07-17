@@ -72,5 +72,17 @@ for i in {1..15}; do
     sleep 10
 done
 
-# Keep the container running
-tail -f /dev/null
+python3 -m pytest -v
+
+# Clean up container, volumes and network
+
+echo "Clean up container, volumes and network"
+docker stop web
+docker stop db
+docker rm web
+docker rm db
+docker volume rm neo4j_data
+docker volume rm neo4j_logs
+docker volume rm yprov_data
+docker network disconnect yprov_net "$CONTAINER_ID"
+docker network rm yprov_net
