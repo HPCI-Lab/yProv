@@ -17,12 +17,14 @@ cleanup() {
 # Set trap to execute cleanup on exit
 trap cleanup EXIT
 
-# Create Docker volumes if not exist
+# Remove and recreate Docker volumes if they exist
 for volume in neo4j_data neo4j_logs yprov_data; do
-  if [ "$(docker volume ls -q -f name=$volume)" == "" ]; then
-    docker volume create $volume
+  if [ "$(docker volume ls -q -f name=$volume)" != "" ]; then
+    docker volume rm $volume
   fi
+  docker volume create $volume
 done
+
 
 # Remove and recreate Docker network if it exists
 if [ "$(docker network ls -q -f name=yprov_net)" != "" ]; then
