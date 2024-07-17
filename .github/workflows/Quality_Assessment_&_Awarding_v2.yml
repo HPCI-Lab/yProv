@@ -18,7 +18,7 @@ jobs:
           name: unittests_pytest
           tool: commands
           commands: /app/script_dockerfile.sh test
-          container: mattiabarbo/prova:3.0
+          container: hpci/yprov-sqa:1.3
       - name: SQAaaS assessment with unit testing (QC.Uni) step
         uses: eosc-synergy/sqaaas-assessment-action@v2
         with:
