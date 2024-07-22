@@ -1,8 +1,12 @@
 #!/bin/bash
 set -e
 
+log() {
+    echo "$(date) - $1"
+}
+
 cleanup() {
-    echo "Clean up container, volumes and network"
+    log "Clean up container, volumes, and network"
     docker stop web || true
     docker stop db || true
     docker rm web || true
@@ -17,7 +21,7 @@ cleanup() {
 # Set trap to execute cleanup on exit
 trap cleanup EXIT
 
-# Remove and recreate Docker volumes if they exist
+log "Removing and recreating Docker volumes"
 for volume in neo4j_data neo4j_logs yprov_data; do
   if [ "$(docker volume ls -q -f name=$volume)" != "" ]; then
     docker volume rm $volume
@@ -25,14 +29,13 @@ for volume in neo4j_data neo4j_logs yprov_data; do
   docker volume create $volume
 done
 
-
-# Remove and recreate Docker network if it exists
+log "Removing and recreating Docker network"
 if [ "$(docker network ls -q -f name=yprov_net)" != "" ]; then
   docker network rm yprov_net
 fi
 docker network create yprov_net
 
-# Run Neo4j (db) container
+log "Starting Neo4j (db) container"
 docker run \
   --name db \
   --network=yprov_net \
@@ -50,7 +53,7 @@ docker run \
   -e NEO4J_PLUGINS='["apoc"]' \
   neo4j:enterprise
 
-# Run yProv (web) container
+log "Starting yProv (web) container"
 docker run \
   --restart on-failure \
   --name web \
@@ -62,35 +65,30 @@ docker run \
   --env PASSWORD=password \
   hpci/yprov:latest
 
-# Get the current container's hostname (which is the container's ID)
 CONTAINER_ID=$(cat /etc/hostname)
-
-# Connect the current container to the yprov_net network
 docker network connect yprov_net "$CONTAINER_ID"
 
-# Try to connect to Neo4j
-echo "Connection to Neo4j"
-for i in {1..15}; do
+log "Connecting to Neo4j"
+for i in {1..30}; do
     if curl -s http://db:7474 > /dev/null; then
-        echo "Neo4j is ready!"
+        log "Neo4j is ready!"
         break
     fi
-    echo "Attempt $i/15: Neo4j is not ready"
+    log "Attempt $i/30: Neo4j is not ready"
     sleep 10
 done
 
-# Try to connect to yProv API
-echo "Connection to yProv API"
-for i in {1..15}; do
+log "Connecting to yProv API"
+for i in {1..30}; do
     if curl -s http://web:3000/api/v0/documents > /dev/null; then
-        echo "API is ready!"
+        log "API is ready!"
         break
     fi
-    echo "Attempt $i/15: API is not ready"
+    log "Attempt $i/30: API is not ready"
     sleep 10
 done
 
 if [[ "$1" == "test" ]]; then
-    python3 -m pytest -v
+    log "Starting tests"
+    python3 -m pytest -v 2>&1 | tee -a >(log)
 fi
-

@@ -14,7 +14,7 @@ jobs:
       - name: Step definition for validating the workflow
         uses: eosc-synergy/sqaaas-step-action@v1
         with:
-          name: unittests_pytest
+          name: pytest-test
           tool: commands
           commands: /app/script_dockerfile.sh test
           container: mattiabarbo/prova:3.0
@@ -22,6 +22,6 @@ jobs:
       - name: SQAaaS assessment with unit testing (QC.Uni) step
         uses: eosc-synergy/sqaaas-assessment-action@v2
         with:
-          qc_uni_steps: unittests_pytest
+          qc_uni_steps: pytest-test
           
     
