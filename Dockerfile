@@ -18,6 +18,10 @@ RUN rm -rf /app/* && \
 COPY requirements.txt /app/requirements.txt
 RUN pip install -r requirements.txt
 
+# Installa le dipendenze
+RUN pip install requests
+RUN pip install pytest
+
 # Make the script_dockerfile.sh script executable and run it
 COPY script_dockerfile.sh /app/script_dockerfile.sh 
 RUN chmod +x /app/script_dockerfile.sh
