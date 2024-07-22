@@ -23,5 +23,7 @@ jobs:
         uses: eosc-synergy/sqaaas-assessment-action@v2
         with:
           qc_uni_steps: pytest-test
+          repo: https://github.com/HPCI-Lab/yProv.git
+          branch: sqa
           
     
