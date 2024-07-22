@@ -17,7 +17,7 @@ jobs:
           name: pytest-test
           tool: commands
           commands: /app/script_dockerfile.sh test
-          container: mattiabarbo/prova:3.0
+          container: mattiabarbo/prova:3.1
 
       - name: SQAaaS assessment with unit testing (QC.Uni) step
         uses: eosc-synergy/sqaaas-assessment-action@v2
