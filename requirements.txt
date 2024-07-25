@@ -1,2 +1,7 @@
-pytest
-requests
+Flask==2.3.1
+prov==2.0.0
+prov2neo[dev]
+py2neo==2021.2.4
+PyJWT==2.8.0
+bcrypt==4.1.2
+passlib==1.7.4
