@@ -99,7 +99,7 @@ paths:
             schema:
               type: object
               properties:
-                {doc_id}:
+                user:
                   type: string
                   example: "second_user"
                   description: User ID to grant permissions to, different from the current user
