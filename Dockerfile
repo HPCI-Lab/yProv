@@ -1,17 +1,33 @@
-FROM python:3-alpine
+FROM python:3.9-slim
 
+# Install dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    git \
+    docker.io \
+    docker-compose \
+    supervisor
+
+# Work Directory
 WORKDIR /app
 
-RUN python -m pip install --upgrade pip
+# Clean and clone updated GitHub repo
+RUN rm -rf /app/* && \
+    git clone --branch sqa https://github.com/HPCI-Lab/yProv.git .
 
-COPY requirements.txt .
-
+# Install requirements
+COPY requirements.txt /app/requirements.txt
 RUN pip install -r requirements.txt
 
-COPY . .
+# Install additional Python dependencies
+RUN pip install requests pytest
 
-ENV PORT=3000 SCHEME="bolt" ADDRESS='db:7687'
+# Copy configuration files
+COPY supervisord.conf /etc/supervisor/supervisord.conf
+COPY docker-compose.yml /app/docker-compose.yml
 
-EXPOSE 3000
+# Make the script executable
+RUN chmod +x /app/script_dockerfile.sh
 
-CMD [ "python" , "./app.py" ]
+# Keep the container running with tail
+CMD ["tail", "-f", "/dev/null"]
