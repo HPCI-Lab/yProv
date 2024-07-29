@@ -8,6 +8,9 @@ def json_to_prov_record(json_file, bundle):
     for rec_type_str, rec_content in json_file.items():
         # get the type of the record 
         rec_type = PROV_RECORD_IDS_MAP[rec_type_str]
+
+        attributes = dict()
+        other_attributes = []
         
         for rec_id, content in rec_content.items():
             if hasattr(content, "items"):  # it is a dict
@@ -18,8 +21,6 @@ def json_to_prov_record(json_file, bundle):
                 elements = content
 
             for element in elements:
-                attributes = dict()
-                other_attributes = []
                 # this is for the multiple-entity membership hack to come
                 membership_extra_members = None
                 for attr_name, values in element.items():
