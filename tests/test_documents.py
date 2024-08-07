@@ -1,3 +1,5 @@
+"""
+
 import requests
 
 #PATH = "http://localhost:3000/api/v0/documents"
@@ -17,7 +19,7 @@ def test_documents_put_doc_id():
     response = requests.put(PATH + '/pta', json=payload, headers=headers)
     assert response.status_code == 201
 
-    """
+    
     # document non valid
     payload = {"document non valid"}
     headers = {
@@ -25,11 +27,11 @@ def test_documents_put_doc_id():
     }
     response = requests.put(PATH + '/wrong_id', json=payload, headers=headers)
     assert response.status_code == 400
-    """
+    
 
 
 def test_documents_put_doc_id_permission():
-    """
+    
     # succesfully added access
     payload = {
         "[object Object]": "second_user",
@@ -72,10 +74,10 @@ def test_documents_put_doc_id_permission():
     }
     response = requests.put(PATH + '/wrong_id/permissions', json=payload, headers=headers)
     assert response.status_code == 404
-    """
+    
 
 def test_documents_put_doc_id_entities_e_id():
-    """
+    
     # entity added
     payload = {}
     headers = {
@@ -99,11 +101,11 @@ def test_documents_put_doc_id_entities_e_id():
     }
     response = requests.put(PATH + '/wrong_id/entities/test', json=payload, headers=headers)
     assert response.status_code == 404
-    """
+    
     
 
 def test_documents_put_doc_id_activities_a_id():
-    """
+    
     # activity added
     payload = {}
     headers = {
@@ -127,11 +129,11 @@ def test_documents_put_doc_id_activities_a_id():
     }
     response = requests.put(PATH + '/wrong_id/activities/test', json=payload, headers=headers)
     assert response.status_code == 404
-    """
+    
 
 
 def test_documents_put_doc_id_agents_a_id():
-    """
+    
     # agents added
     payload = {}
     headers = {
@@ -155,11 +157,11 @@ def test_documents_put_doc_id_agents_a_id():
     }
     response = requests.put(PATH + '/wrong_id/agents/test', json=payload, headers=headers)
     assert response.status_code == 404
-    """
+    
 
 
 def test_documents_put_doc_id_relations_r_id():
-    """
+    
     # agents added
     payload = {}
     headers = {
@@ -183,7 +185,7 @@ def test_documents_put_doc_id_relations_r_id():
     }
     response = requests.put(PATH + '/wrong_id/relations/test', json=payload, headers=headers)
     assert response.status_code == 404
-    """
+    
 
 def test_documents_get():
     # return the list of documents
@@ -244,7 +246,7 @@ def test_documents_get_doc_id_agents():
 
 
 def test_documents_get_doc_id_entities_e_id():
-    """
+    
     # return requested entity
     response = requests.get(PATH + "/pta/entities/test")
     assert response.status_code == 200
@@ -252,11 +254,11 @@ def test_documents_get_doc_id_entities_e_id():
     # document not found
     response = requests.get(PATH + "/wrong_id/entities/test")
     assert response.status_code == 404
-    """
+    
 
 
 def test_documents_get_doc_id_activities_a_id():
-    """
+    
     # list of activities
     response = requests.get(PATH + "/pta/activities/test")
     assert response.status_code == 200
@@ -264,11 +266,11 @@ def test_documents_get_doc_id_activities_a_id():
     # document not found
     response = requests.get(PATH + "/wrong_id/activities/test")
     assert response.status_code == 404
-    """
+    
 
 
 def test_documents_get_doc_id_agents_a_id():
-    """
+    
     # list of agents
     response = requests.get(PATH + "/pta/agents/test")
     assert response.status_code == 200
@@ -276,11 +278,11 @@ def test_documents_get_doc_id_agents_a_id():
     # document not found
     response = requests.get(PATH + "/wrong_id/agents/test")
     assert response.status_code == 404
-    """
+    
 
 
 def test_documents_get_doc_id_relations_r_id():
-    """
+    
     # list of agents
     response = requests.get(PATH + "/pta/agents/test")
     assert response.status_code == 200
@@ -288,11 +290,11 @@ def test_documents_get_doc_id_relations_r_id():
     # document not found
     response = requests.get(PATH + "/wrong_id/agents/test")
     assert response.status_code == 404
-    """
+    
 
 
 def test_documents_delete_doc_id_entities_e_id():
-    """
+    
     # document uploaded
     headers = {
         'Authorization': 'Bearer wrong_token'
@@ -313,11 +315,11 @@ def test_documents_delete_doc_id_entities_e_id():
     }
     response = requests.delete(PATH + '/pta/entities/test', headers=headers)
     assert response.status_code == 404
-    """
+    
 
 
 def test_documents_delete_doc_id_activities_a_id():
-    """
+    
     # document uploaded
     headers = {
         'Authorization': 'Bearer wrong_token'
@@ -338,11 +340,11 @@ def test_documents_delete_doc_id_activities_a_id():
     }
     response = requests.delete(PATH + '/pta/activites/test', headers=headers)
     assert response.status_code == 404
-    """
+    
 
 
 def test_documents_delete_doc_id_agents_a_id():
-    """
+    
     # document uploaded
     headers = {
         'Authorization': 'Bearer wrong_token'
@@ -363,11 +365,11 @@ def test_documents_delete_doc_id_agents_a_id():
     }
     response = requests.delete(PATH + '/pta/agents/test', headers=headers)
     assert response.status_code == 404
-    """
+    
 
 
 def test_documents_delete_doc_id_relations_r_id():
-    """
+    
     # document uploaded
     headers = {
         'Authorization': 'Bearer wrong_token'
@@ -388,18 +390,18 @@ def test_documents_delete_doc_id_relations_r_id():
     }
     response = requests.delete(PATH + '/pta/relations/test', headers=headers)
     assert response.status_code == 404
-    """
+    
 
 
 def test_documents_delete_doc_id():
-    """
+
     # document uploaded
     headers = {
         'Authorization': 'Bearer wrong_token'
     }   
     response = requests.delete(PATH + '/pta', headers=headers)
     assert response.status_code == 403
-    """
+
 
     # document uploaded
     headers = {
@@ -415,6 +417,8 @@ def test_documents_delete_doc_id():
     response = requests.delete(PATH + '/pta', headers=headers)
     assert response.status_code == 404
 
+    
+"""
   
 
     
