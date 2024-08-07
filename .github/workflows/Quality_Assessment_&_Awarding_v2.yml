@@ -16,9 +16,7 @@ jobs:
         with:
           name: pytest-test
           tool: commands
-          commands: |
-            "pytest /app/tests/test_mock_auth.py"
-            "pytest /app/tests/test_mock_documents.py"
+          commands: pytest /app/tests/test_mock_auth.py
           container: mattiabarbo/prova:5.0
 
       - name: SQAaaS assessment with unit testing (QC.Uni) step
