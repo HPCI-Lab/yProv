@@ -4,7 +4,8 @@ FROM python:3.9-slim
 RUN apt-get update && apt-get install -y \
     curl \
     git \
-    docker.io \
+    docker.io
+
 # Work Directory
 WORKDIR /app
 
@@ -17,7 +18,7 @@ COPY requirements.txt /app/requirements.txt
 RUN pip install -r requirements.txt
 
 # Install additional Python dependencies
-RUN pip install requests pytest
+RUN pip install requests pytest responses
 
 # Keep the container running with tail
 CMD ["tail", "-f", "/dev/null"]

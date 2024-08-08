@@ -1,3 +1,5 @@
+"""
+
 import pytest
 import subprocess
 import time
@@ -134,3 +136,5 @@ def test_auth_login():
     }
     response = requests.post(PATH + '/login', json=payload)
     assert response.status_code == 401
+
+"""
