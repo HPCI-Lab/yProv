@@ -4,7 +4,8 @@ FROM python:3.9-slim
 RUN apt-get update && apt-get install -y \
     curl \
     git \
-    docker.io
+    docker.io \
+    docker-compose
 
 # Work Directory
 WORKDIR /app
@@ -17,8 +18,9 @@ RUN rm -rf /app/* && \
 COPY requirements.txt /app/requirements.txt
 RUN pip install -r requirements.txt
 
-# Install additional Python dependencies
-RUN pip install requests pytest responses
+# Make the script_dockerfile.sh script executable and run it
+COPY tests.sh /app/tests.sh 
+RUN chmod +x /app/tests.sh
 
-# Keep the container running with tail
-CMD ["tail", "-f", "/dev/null"]
+# Default command to keep the container running
+CMD ["/app/tests.sh test"]

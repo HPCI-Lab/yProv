@@ -138,3 +138,82 @@ def test_auth_login():
     assert response.status_code == 401
 
 """
+
+import requests
+
+
+#PATH = "http://localhost:3000/api/v0/auth"
+
+# path to use to create a docker image
+PATH = "http://web:3000/api/v0/auth"
+
+
+
+def test_auth_register():
+    
+    # correct new username and password 
+    payload = {
+        "user": "myUsername",
+        "password": "myPassword"
+    }
+    response = requests.post(PATH + '/register', json=payload)
+    assert response.status_code == 201
+    
+
+    # username and password already exist
+    payload = {
+        "user": "myUsername",
+        "password": "myPassword"
+    }
+    response = requests.post(PATH + '/register', json=payload)
+    assert response.status_code == 400
+
+    # no username
+    payload = {
+        "password": "myPassword"
+    }
+    response = requests.post(PATH + '/register', json=payload)
+    assert response.status_code == 400
+
+    # no password
+    payload = {
+        "user": "myUsername"
+    }
+    response = requests.post(PATH + '/register', json=payload)
+    assert response.status_code == 400
+
+
+def test_auth_login():
+    # Login corretto
+    payload = {
+        "user": "myUsername",
+        "password": "myPassword"
+    }
+    response = requests.post(PATH + '/login', json=payload)
+    assert response.status_code == 200
+
+    #test_documents.TOKEN = response.json().get("result")
+
+    # Login senza username e password
+    payload = {
+        "user": "",
+        "password": ""
+    }
+    response = requests.post(PATH + '/login', json=payload)
+    assert response.status_code == 400
+
+    # Login con username corretto e password errata
+    payload = {
+        "user": "myUsername",
+        "password": "wrongPassword"
+    }
+    response = requests.post(PATH + '/login', json=payload)
+    assert response.status_code == 401
+
+    # Login con username errato e password corretta
+    payload = {
+        "user": "wrongUser",
+        "password": "myPassword"
+    }
+    response = requests.post(PATH + '/login', json=payload)
+    assert response.status_code == 401

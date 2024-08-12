@@ -1,9 +1,8 @@
-import pytest
 import responses
 import requests
 
 # URL dell'API
-PATH = "http://localhost:3000/api/v0/auth"
+PATH = "http://web:3000/api/v0/auth"
 
 @responses.activate
 def test_auth_register():

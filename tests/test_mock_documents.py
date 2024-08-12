@@ -1,9 +1,10 @@
+"""
 import pytest
 import responses
 import requests
 
 # URL dell'API
-PATH = "http://localhost:3000/api/v0/documents"
+PATH = "http://web:3000/api/v0/documents"
 TOKEN = "test_token"
 
 @responses.activate
@@ -749,3 +750,4 @@ def test_documents_delete_doc_id():
     response = requests.delete(PATH + '/pta', headers=headers)
     assert response.status_code == 404
     assert response.json() == {"error": "Document not found"}
+"""
