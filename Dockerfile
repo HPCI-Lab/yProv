@@ -1,24 +1,20 @@
+# Usa l'immagine ufficiale di Python come base
 FROM python:3.9-slim
 
-# Install dependencies
-RUN apt-get update && apt-get install -y \
-    curl \
-    git \
-    docker.io
-
-# Work Directory
+# Imposta la directory di lavoro nel container
 WORKDIR /app
 
-# Clean and clone updated GitHub repo
-RUN rm -rf /app/* && \
-    git clone --branch sqa https://github.com/HPCI-Lab/yProv.git .
+# Installa curl
+RUN apt-get update && apt-get install -y curl
 
-# Install requirements
-COPY requirements.txt /app/requirements.txt
-RUN pip install -r requirements.txt
+# Copia l'intero contenuto della directory del progetto nella directory di lavoro del container
+COPY . .
 
-# Install additional Python dependencies
-RUN pip install requests pytest responses
+# Assegna i permessi di esecuzione allo script 'tests.sh'
+RUN chmod +x /app/tests/tests.sh
 
-# Keep the container running with tail
-CMD ["tail", "-f", "/dev/null"]
+# Installa le dipendenze del progetto, se necessario
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Comando di default: esegue lo script 'tests.sh'
+CMD ["/app/tests/tests.sh"]
