@@ -90,6 +90,4 @@ for i in {1..15}; do
     sleep 10
 done
 
-if [[ "$1" == "test" ]]; then
-    python3 -m pytest -v
-fi
+python3 -m pytest -v
