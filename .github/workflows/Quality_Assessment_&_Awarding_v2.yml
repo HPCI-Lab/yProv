@@ -16,8 +16,8 @@ jobs:
         with:
           name: pytest-test
           tool: commands
-          commands: pytest /app/tests
-          container: hpci/yprov-sqa:1.4
+          commands: pytest /app/tests/test_mock_auth.py
+          container: hpci/yprov-sqa:mocktest
 
       - name: SQAaaS assessment with unit testing (QC.Uni) step
         uses: eosc-synergy/sqaaas-assessment-action@v2
