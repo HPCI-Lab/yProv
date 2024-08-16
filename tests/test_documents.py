@@ -1,79 +1,88 @@
-"""
-
 import requests
 
-#PATH = "http://localhost:3000/api/v0/documents"
+PATH = "http://localhost:3000/api/v0/documents"
 
 # path to use to create a docker image
-PATH = "http://web:3000/api/v0/documents"
+#PATH = "http://web:3000/api/v0/documents"
 
 
-TOKEN = None
+TOKEN_A = None
+TOKEN_B = None
 
 def test_documents_put_doc_id():
     # document uploaded
     payload = {}
     headers = {
-        'Authorization': 'Bearer ' + TOKEN
+        'Authorization': 'Bearer ' + TOKEN_A
     }
     response = requests.put(PATH + '/pta', json=payload, headers=headers)
     assert response.status_code == 201
 
-    
     # document non valid
-    payload = {"document non valid"}
-    headers = {
-        'Authorization': 'Bearer ' + TOKEN
+    payload = {
+        "nodes": [
+            {
+                "id": "1",
+                "labels": ["Person"],
+                "properties": {
+                    # name value should be a string
+                    "name": 12345 
+                }
+            }
+        ]     
     }
-    response = requests.put(PATH + '/wrong_id', json=payload, headers=headers)
-    assert response.status_code == 400
-    
+
+    headers = {
+        'Authorization': 'Bearer ' + TOKEN_A
+    }
+    response = requests.put(PATH + '/1', json=payload, headers=headers)
+    assert response.status_code == 400   
 
 
 def test_documents_put_doc_id_permission():
     
     # succesfully added access
     payload = {
-        "[object Object]": "second_user",
+        "user": "userB",
         "level": "r"
     }
     headers = {
-        'Authorization': 'Bearer ' + TOKEN
+        'Authorization': 'Bearer ' + TOKEN_A
     }
     response = requests.put(PATH + '/pta/permissions', json=payload, headers=headers)
     assert response.status_code == 201
 
     # data non valid
-    payload = {
-        "invalid data"
-    }
+    payload = {}
     headers = {
-        'Authorization': 'Bearer ' + TOKEN
+        'Authorization': 'Bearer ' + TOKEN_A
     }
     response = requests.put(PATH + '/pta/permissions', json=payload, headers=headers)
     assert response.status_code == 400
 
     # permission issue
     payload = {
-        "[object Object]": "second_user",
+        "user": "userC",
         "level": "r"
     }
     headers = {
-        'Authorization': 'Bearer wrong_token'
+        'Authorization': 'Bearer ' + TOKEN_B
     }
     response = requests.put(PATH + '/pta/permissions', json=payload, headers=headers)
     assert response.status_code == 403
 
+    """
     # document not found
     payload = {
-        "[object Object]": "second_user",
-        "level": "r"
+        "user": "userB",
+        "level": "w"
     }
     headers = {
-        'Authorization': 'Bearer ' + TOKEN
+        'Authorization': 'Bearer ' + TOKEN_A
     }
-    response = requests.put(PATH + '/wrong_id/permissions', json=payload, headers=headers)
+    response = requests.put(PATH + '/1/permissions', json=payload, headers=headers)
     assert response.status_code == 404
+    """
     
 
 def test_documents_put_doc_id_entities_e_id():
@@ -81,10 +90,12 @@ def test_documents_put_doc_id_entities_e_id():
     # entity added
     payload = {}
     headers = {
-       'Authorization': 'Bearer ' + TOKEN
+       'Authorization': 'Bearer ' + TOKEN_A
     }
     response = requests.put(PATH + '/pta/entities/test', json=payload, headers=headers)
     assert response.status_code == 201
+
+    """
 
     # document not valid
     payload = { "document not valid" }
