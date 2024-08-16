@@ -1,15 +1,12 @@
-"""
-import pytest
 import responses
 import requests
 
-# URL dell'API
-PATH = "http://web:3000/api/v0/documents"
+PATH = "http://localhost:3000/api/v0/documents"
 TOKEN = "test_token"
 
 @responses.activate
-def test_documents_put_doc_id():
-    # Mock per document uploaded
+def test_mock_documents_put_doc_id():
+    
     responses.add(
         responses.PUT,
         f"{PATH}/pta",
@@ -25,7 +22,6 @@ def test_documents_put_doc_id():
     assert response.status_code == 201
     assert response.json() == {"message": "Document uploaded successfully"}
 
-    # Mock per document non valid
     responses.add(
         responses.PUT,
         f"{PATH}/wrong_id",
@@ -33,14 +29,26 @@ def test_documents_put_doc_id():
         status=400
     )
 
-    payload = {"document non valid"}
+    payload = {
+        "nodes": [
+            {
+                "id": "1",
+                "labels": ["Person"],
+                "properties": {
+                    # name value should be a string
+                    "name": 12345 
+                }
+            }
+        ]     
+    }
     response = requests.put(PATH + '/wrong_id', json=payload, headers=headers)
     assert response.status_code == 400
     assert response.json() == {"error": "Document not valid"}
 
+
 @responses.activate
-def test_documents_put_doc_id_permission():
-    # Mock per successfully added access
+def test_mock_documents_put_doc_id_permission():
+    
     responses.add(
         responses.PUT,
         f"{PATH}/pta/permissions",
@@ -49,7 +57,7 @@ def test_documents_put_doc_id_permission():
     )
 
     payload = {
-        "[object Object]": "second_user",
+        "user": "userB",
         "level": "r"
     }
     headers = {
@@ -59,7 +67,6 @@ def test_documents_put_doc_id_permission():
     assert response.status_code == 201
     assert response.json() == {"message": "Access added successfully"}
 
-    # Mock per data non valid
     responses.add(
         responses.PUT,
         f"{PATH}/pta/permissions",
@@ -67,12 +74,14 @@ def test_documents_put_doc_id_permission():
         status=400
     )
 
-    payload = {"invalid data"}
+    payload = {}
+    headers = {
+        'Authorization': 'Bearer ' + TOKEN
+    }
     response = requests.put(PATH + '/pta/permissions', json=payload, headers=headers)
     assert response.status_code == 400
     assert response.json() == {"error": "Invalid data"}
 
-    # Mock per permission issue
     responses.add(
         responses.PUT,
         f"{PATH}/pta/permissions",
@@ -81,17 +90,16 @@ def test_documents_put_doc_id_permission():
     )
 
     payload = {
-        "[object Object]": "second_user",
+        "user": "userC",
         "level": "r"
     }
     headers = {
-        'Authorization': 'Bearer wrong_token'
+        'Authorization': 'Bearer ' + "wrong_token"
     }
     response = requests.put(PATH + '/pta/permissions', json=payload, headers=headers)
     assert response.status_code == 403
     assert response.json() == {"error": "Permission issue"}
-
-    # Mock per document not found
+    
     responses.add(
         responses.PUT,
         f"{PATH}/wrong_id/permissions",
@@ -105,10 +113,11 @@ def test_documents_put_doc_id_permission():
     response = requests.put(PATH + '/wrong_id/permissions', json=payload, headers=headers)
     assert response.status_code == 404
     assert response.json() == {"error": "Document not found"}
+    
 
 @responses.activate
-def test_documents_put_doc_id_entities_e_id():
-    # Mock per entity added
+def test_mock_documents_put_doc_id_entities_e_id():
+    
     responses.add(
         responses.PUT,
         f"{PATH}/pta/entities/test",
@@ -116,7 +125,15 @@ def test_documents_put_doc_id_entities_e_id():
         status=201
     )
 
-    payload = {}
+    payload = {
+        "entity": {
+            "ophidia:MyNewTest":
+             {
+                  "prov:type": "ophidia:datacube",
+                  "prov:name": "test"
+             }
+        }    
+    }
     headers = {
        'Authorization': 'Bearer ' + TOKEN
     }
@@ -124,7 +141,6 @@ def test_documents_put_doc_id_entities_e_id():
     assert response.status_code == 201
     assert response.json() == {"message": "Entity added successfully"}
 
-    # Mock per document non valid
     responses.add(
         responses.PUT,
         f"{PATH}/pta/entities/test",
@@ -132,12 +148,23 @@ def test_documents_put_doc_id_entities_e_id():
         status=400
     )
 
-    payload = {"document not valid"}
+    payload = {
+        "entity": {
+            "ophidia:MyNewTest":
+             {
+                  "prov:type": "ophidia:datacube",
+                  # name should be a string
+                  "prov:name": 1234
+             }
+        }    
+    }
+    headers = {
+       'Authorization': 'Bearer ' + TOKEN
+    }
     response = requests.put(PATH + '/pta/entities/test', json=payload, headers=headers)
     assert response.status_code == 400
     assert response.json() == {"error": "Document not valid"}
 
-    # Mock per document not found
     responses.add(
         responses.PUT,
         f"{PATH}/wrong_id/entities/test",
@@ -145,14 +172,23 @@ def test_documents_put_doc_id_entities_e_id():
         status=404
     )
 
-    payload = {}
+    payload = {
+        "entity": {
+            "ophidia:MyNewTest":
+             {
+                  "prov:type": "ophidia:datacube",
+                  "prov:name": "test"
+             }
+        }    
+    }
     response = requests.put(PATH + '/wrong_id/entities/test', json=payload, headers=headers)
     assert response.status_code == 404
     assert response.json() == {"error": "Document not found"}
 
+
 @responses.activate
-def test_documents_put_doc_id_activities_a_id():
-    # Mock per activity added
+def test_mock_documents_put_doc_id_activities_a_id():
+    
     responses.add(
         responses.PUT,
         f"{PATH}/pta/activities/test",
@@ -160,7 +196,15 @@ def test_documents_put_doc_id_activities_a_id():
         status=201
     )
 
-    payload = {}
+    payload = {
+        "activity": {
+            "ophidia:MyNewTest":
+             {
+                  "prov:type": "ophidia:datacube",
+                  "prov:name": "test"
+             }
+        }    
+    }
     headers = {
         'Authorization': 'Bearer ' + TOKEN
     }
@@ -168,7 +212,6 @@ def test_documents_put_doc_id_activities_a_id():
     assert response.status_code == 201
     assert response.json() == {"message": "Activity added successfully"}
 
-    # Mock per document non valid
     responses.add(
         responses.PUT,
         f"{PATH}/pta/activities/test",
@@ -176,12 +219,23 @@ def test_documents_put_doc_id_activities_a_id():
         status=400
     )
 
-    payload = {"document not valid"}
+    payload = {
+        "activity": {
+            "ophidia:MyNewTest":
+             {
+                  "prov:type": "ophidia:datacube",
+                  # name should be a string
+                  "prov:name": 1234
+             }
+        }    
+    }
+    headers = {
+        'Authorization': 'Bearer ' + TOKEN
+    }
     response = requests.put(PATH + '/pta/activities/test', json=payload, headers=headers)
     assert response.status_code == 400
     assert response.json() == {"error": "Document not valid"}
 
-    # Mock per document not found
     responses.add(
         responses.PUT,
         f"{PATH}/wrong_id/activities/test",
@@ -189,14 +243,25 @@ def test_documents_put_doc_id_activities_a_id():
         status=404
     )
 
-    payload = {}
+    payload = {
+        "activity": {
+            "ophidia:MyNewTest":
+             {
+                  "prov:type": "ophidia:datacube",
+                  "prov:name": "test"
+             }
+        }    
+    }
+    headers = {
+        'Authorization': 'Bearer ' + TOKEN
+    }
     response = requests.put(PATH + '/wrong_id/activities/test', json=payload, headers=headers)
     assert response.status_code == 404
     assert response.json() == {"error": "Document not found"}
 
 @responses.activate
-def test_documents_put_doc_id_agents_a_id():
-    # Mock per agents added
+def test_mock_documents_put_doc_id_agents_a_id():
+    
     responses.add(
         responses.PUT,
         f"{PATH}/pta/agents/test",
@@ -204,7 +269,15 @@ def test_documents_put_doc_id_agents_a_id():
         status=201
     )
 
-    payload = {}
+    payload = {
+        "agent": {
+            "ophidia:MyNewTest":
+             {
+                  "prov:type": "ophidia:datacube",
+                  "prov:name": "test"
+             }
+        }    
+    }
     headers = {
         'Authorization': 'Bearer ' + TOKEN
     }
@@ -212,7 +285,6 @@ def test_documents_put_doc_id_agents_a_id():
     assert response.status_code == 201
     assert response.json() == {"message": "Agents added successfully"}
 
-    # Mock per document non valid
     responses.add(
         responses.PUT,
         f"{PATH}/pta/agents/test",
@@ -220,12 +292,23 @@ def test_documents_put_doc_id_agents_a_id():
         status=400
     )
 
-    payload = {"document not valid"}
+    payload = {
+        "agent": {
+            "ophidia:MyNewTest":
+             {
+                  "prov:type": "ophidia:datacube",
+                  # name should be a string
+                  "prov:name": 1234
+             }
+        }    
+    }
+    headers = {
+        'Authorization': 'Bearer ' + TOKEN
+    }
     response = requests.put(PATH + '/pta/agents/test', json=payload, headers=headers)
     assert response.status_code == 400
     assert response.json() == {"error": "Document not valid"}
 
-    # Mock per document not found
     responses.add(
         responses.PUT,
         f"{PATH}/wrong_id/agents/test",
@@ -233,14 +316,25 @@ def test_documents_put_doc_id_agents_a_id():
         status=404
     )
 
-    payload = {}
+    payload = {
+        "agent": {
+            "ophidia:MyNewTest":
+             {
+                  "prov:type": "ophidia:datacube",
+                  "prov:name": "test"
+             }
+        }    
+    }
+    headers = {
+        'Authorization': 'Bearer ' + TOKEN
+    }
     response = requests.put(PATH + '/wrong_id/agents/test', json=payload, headers=headers)
     assert response.status_code == 404
     assert response.json() == {"error": "Document not found"}
 
 @responses.activate
-def test_documents_put_doc_id_relations_r_id():
-    # Mock per agents added
+def test_mock_documents_put_doc_id_relations_r_id():
+    
     responses.add(
         responses.PUT,
         f"{PATH}/pta/relations/test",
@@ -248,7 +342,15 @@ def test_documents_put_doc_id_relations_r_id():
         status=201
     )
 
-    payload = {}
+    payload = {
+        "relation": {
+            "ophidia:MyNewTest":
+             {
+                  "prov:type": "ophidia:datacube",
+                  "prov:name": "test"
+             }
+        }    
+    }
     headers = {
         'Authorization': 'Bearer ' + TOKEN
     }
@@ -256,7 +358,6 @@ def test_documents_put_doc_id_relations_r_id():
     assert response.status_code == 201
     assert response.json() == {"message": "Relations added successfully"}
 
-    # Mock per document non valid
     responses.add(
         responses.PUT,
         f"{PATH}/pta/relations/test",
@@ -264,12 +365,23 @@ def test_documents_put_doc_id_relations_r_id():
         status=400
     )
 
-    payload = {"document not valid"}
+    payload = {
+        "relation": {
+            "ophidia:MyNewTest":
+             {
+                  "prov:type": "ophidia:datacube",
+                  # name should be a string
+                  "prov:name": 1234
+             }
+        }    
+    }
+    headers = {
+        'Authorization': 'Bearer ' + TOKEN
+    }
     response = requests.put(PATH + '/pta/relations/test', json=payload, headers=headers)
     assert response.status_code == 400
     assert response.json() == {"error": "Document not valid"}
 
-    # Mock per document not found
     responses.add(
         responses.PUT,
         f"{PATH}/wrong_id/relations/test",
@@ -277,14 +389,26 @@ def test_documents_put_doc_id_relations_r_id():
         status=404
     )
 
-    payload = {}
+    payload = {
+        "relation": {
+            "ophidia:MyNewTest":
+             {
+                  "prov:type": "ophidia:datacube",
+                  "prov:name": "test"
+             }
+        }    
+    }
+    headers = {
+        'Authorization': 'Bearer ' + TOKEN
+    }
     response = requests.put(PATH + '/wrong_id/relations/test', json=payload, headers=headers)
     assert response.status_code == 404
     assert response.json() == {"error": "Document not found"}
 
+
 @responses.activate
-def test_documents_get():
-    # Mock per return the list of documents
+def test_mock_documents_get():
+    
     responses.add(
         responses.GET,
         PATH,
@@ -296,9 +420,10 @@ def test_documents_get():
     assert response.status_code == 200
     assert response.json() == {"documents": []}
 
+
 @responses.activate
-def test_documents_get_doc_id():
-    # Mock per return the correct document
+def test_mock_documents_get_doc_id():
+    
     responses.add(
         responses.GET,
         f"{PATH}/pta",
@@ -310,7 +435,6 @@ def test_documents_get_doc_id():
     assert response.status_code == 200
     assert response.json() == {"document": "pta"}
 
-    # Mock per document not found
     responses.add(
         responses.GET,
         f"{PATH}/wrong_id",
@@ -322,9 +446,10 @@ def test_documents_get_doc_id():
     assert response.status_code == 404
     assert response.json() == {"error": "Document not found"}
 
+
 @responses.activate
-def test_documents_get_doc_id_subgraph():
-    # Mock per return requested subgraph
+def test_mock_documents_get_doc_id_subgraph():
+    
     QUERY = "?id=ophidia%3Ahttp%3A%2F%2F127.0.0.1%2Fophidia%2F66%2F7191"
     responses.add(
         responses.GET,
@@ -337,7 +462,6 @@ def test_documents_get_doc_id_subgraph():
     assert response.status_code == 200
     assert response.json() == {"subgraph": "data"}
 
-    # Mock per document not found
     responses.add(
         responses.GET,
         f"{PATH}/wrong_id/subgraph" + QUERY,
@@ -349,9 +473,10 @@ def test_documents_get_doc_id_subgraph():
     assert response.status_code == 404
     assert response.json() == {"error": "Document not found"}
 
+
 @responses.activate
-def test_documents_get_doc_id_entities():
-    # Mock per list of entities
+def test_mock_documents_get_doc_id_entities():
+    
     responses.add(
         responses.GET,
         f"{PATH}/pta/entities",
@@ -363,7 +488,6 @@ def test_documents_get_doc_id_entities():
     assert response.status_code == 200
     assert response.json() == {"entities": []}
 
-    # Mock per document not found
     responses.add(
         responses.GET,
         f"{PATH}/wrong_id/entities",
@@ -375,9 +499,10 @@ def test_documents_get_doc_id_entities():
     assert response.status_code == 404
     assert response.json() == {"error": "Document not found"}
 
+
 @responses.activate
-def test_documents_get_doc_id_activities():
-    # Mock per list of activities
+def test_mock_documents_get_doc_id_activities():
+    
     responses.add(
         responses.GET,
         f"{PATH}/pta/activities",
@@ -389,7 +514,6 @@ def test_documents_get_doc_id_activities():
     assert response.status_code == 200
     assert response.json() == {"activities": []}
 
-    # Mock per document not found
     responses.add(
         responses.GET,
         f"{PATH}/wrong_id/activities",
@@ -401,8 +525,9 @@ def test_documents_get_doc_id_activities():
     assert response.status_code == 404
     assert response.json() == {"error": "Document not found"}
 
+
 @responses.activate
-def test_documents_get_doc_id_agents():
+def test_mock_documents_get_doc_id_agents():
     # Mock per list of agents
     responses.add(
         responses.GET,
@@ -415,7 +540,6 @@ def test_documents_get_doc_id_agents():
     assert response.status_code == 200
     assert response.json() == {"agents": []}
 
-    # Mock per document not found
     responses.add(
         responses.GET,
         f"{PATH}/wrong_id/agents",
@@ -427,9 +551,10 @@ def test_documents_get_doc_id_agents():
     assert response.status_code == 404
     assert response.json() == {"error": "Document not found"}
 
+
 @responses.activate
-def test_documents_get_doc_id_entities_e_id():
-    # Mock per return requested entity
+def test_mock_documents_get_doc_id_entities_e_id():
+    
     responses.add(
         responses.GET,
         f"{PATH}/pta/entities/test",
@@ -441,7 +566,6 @@ def test_documents_get_doc_id_entities_e_id():
     assert response.status_code == 200
     assert response.json() == {"entity": "test"}
 
-    # Mock per document not found
     responses.add(
         responses.GET,
         f"{PATH}/wrong_id/entities/test",
@@ -453,9 +577,10 @@ def test_documents_get_doc_id_entities_e_id():
     assert response.status_code == 404
     assert response.json() == {"error": "Document not found"}
 
+
 @responses.activate
-def test_documents_get_doc_id_activities_a_id():
-    # Mock per list of activities
+def test_mock_documents_get_doc_id_activities_a_id():
+
     responses.add(
         responses.GET,
         f"{PATH}/pta/activities/test",
@@ -467,7 +592,6 @@ def test_documents_get_doc_id_activities_a_id():
     assert response.status_code == 200
     assert response.json() == {"activity": "test"}
 
-    # Mock per document not found
     responses.add(
         responses.GET,
         f"{PATH}/wrong_id/activities/test",
@@ -479,9 +603,10 @@ def test_documents_get_doc_id_activities_a_id():
     assert response.status_code == 404
     assert response.json() == {"error": "Document not found"}
 
+
 @responses.activate
-def test_documents_get_doc_id_agents_a_id():
-    # Mock per list of agents
+def test_mock_documents_get_doc_id_agents_a_id():
+    
     responses.add(
         responses.GET,
         f"{PATH}/pta/agents/test",
@@ -493,7 +618,6 @@ def test_documents_get_doc_id_agents_a_id():
     assert response.status_code == 200
     assert response.json() == {"agent": "test"}
 
-    # Mock per document not found
     responses.add(
         responses.GET,
         f"{PATH}/wrong_id/agents/test",
@@ -505,9 +629,10 @@ def test_documents_get_doc_id_agents_a_id():
     assert response.status_code == 404
     assert response.json() == {"error": "Document not found"}
 
+
 @responses.activate
-def test_documents_get_doc_id_relations_r_id():
-    # Mock per list of relations
+def test_mock_documents_get_doc_id_relations_r_id():
+
     responses.add(
         responses.GET,
         f"{PATH}/pta/relations/test",
@@ -519,7 +644,6 @@ def test_documents_get_doc_id_relations_r_id():
     assert response.status_code == 200
     assert response.json() == {"relation": "test"}
 
-    # Mock per document not found
     responses.add(
         responses.GET,
         f"{PATH}/wrong_id/relations/test",
@@ -531,9 +655,10 @@ def test_documents_get_doc_id_relations_r_id():
     assert response.status_code == 404
     assert response.json() == {"error": "Document not found"}
 
+
 @responses.activate
-def test_documents_delete_doc_id_entities_e_id():
-    # Mock per unauthorized delete
+def test_mock_documents_delete_doc_id_entities_e_id():
+    
     responses.add(
         responses.DELETE,
         f"{PATH}/pta/entities/test",
@@ -542,13 +667,12 @@ def test_documents_delete_doc_id_entities_e_id():
     )
 
     headers = {
-        'Authorization': 'Bearer wrong_token'
+        'Authorization': 'Bearer ' + 'wrong_token'
     }
     response = requests.delete(PATH + '/pta/entities/test', headers=headers)
     assert response.status_code == 403
     assert response.json() == {"error": "Unauthorized"}
 
-    # Mock per successful delete
     responses.add(
         responses.DELETE,
         f"{PATH}/pta/entities/test",
@@ -563,7 +687,6 @@ def test_documents_delete_doc_id_entities_e_id():
     assert response.status_code == 200
     assert response.json() == {"message": "Entity deleted successfully"}
 
-    # Mock per entity not found
     responses.add(
         responses.DELETE,
         f"{PATH}/pta/entities/test",
@@ -571,13 +694,17 @@ def test_documents_delete_doc_id_entities_e_id():
         status=404
     )
 
+    headers = {
+        'Authorization': 'Bearer ' + TOKEN
+    }
     response = requests.delete(PATH + '/pta/entities/test', headers=headers)
     assert response.status_code == 404
     assert response.json() == {"error": "Entity not found"}
 
+
 @responses.activate
-def test_documents_delete_doc_id_activities_a_id():
-    # Mock per unauthorized delete
+def test_mock_documents_delete_doc_id_activities_a_id():
+    
     responses.add(
         responses.DELETE,
         f"{PATH}/pta/activities/test",
@@ -586,13 +713,12 @@ def test_documents_delete_doc_id_activities_a_id():
     )
 
     headers = {
-        'Authorization': 'Bearer wrong_token'
+        'Authorization': 'Bearer ' + 'wrong_token'
     }
     response = requests.delete(PATH + '/pta/activities/test', headers=headers)
     assert response.status_code == 403
     assert response.json() == {"error": "Unauthorized"}
 
-    # Mock per successful delete
     responses.add(
         responses.DELETE,
         f"{PATH}/pta/activities/test",
@@ -607,7 +733,6 @@ def test_documents_delete_doc_id_activities_a_id():
     assert response.status_code == 200
     assert response.json() == {"message": "Activity deleted successfully"}
 
-    # Mock per activity not found
     responses.add(
         responses.DELETE,
         f"{PATH}/pta/activities/test",
@@ -615,13 +740,17 @@ def test_documents_delete_doc_id_activities_a_id():
         status=404
     )
 
+    headers = {
+        'Authorization': 'Bearer ' + TOKEN
+    }
     response = requests.delete(PATH + '/pta/activities/test', headers=headers)
     assert response.status_code == 404
     assert response.json() == {"error": "Activity not found"}
 
+
 @responses.activate
-def test_documents_delete_doc_id_agents_a_id():
-    # Mock per unauthorized delete
+def test_mock_documents_delete_doc_id_agents_a_id():
+    
     responses.add(
         responses.DELETE,
         f"{PATH}/pta/agents/test",
@@ -630,13 +759,12 @@ def test_documents_delete_doc_id_agents_a_id():
     )
 
     headers = {
-        'Authorization': 'Bearer wrong_token'
+        'Authorization': 'Bearer ' + 'wrong_token'
     }
     response = requests.delete(PATH + '/pta/agents/test', headers=headers)
     assert response.status_code == 403
     assert response.json() == {"error": "Unauthorized"}
 
-    # Mock per successful delete
     responses.add(
         responses.DELETE,
         f"{PATH}/pta/agents/test",
@@ -651,7 +779,6 @@ def test_documents_delete_doc_id_agents_a_id():
     assert response.status_code == 200
     assert response.json() == {"message": "Agent deleted successfully"}
 
-    # Mock per agent not found
     responses.add(
         responses.DELETE,
         f"{PATH}/pta/agents/test",
@@ -659,13 +786,17 @@ def test_documents_delete_doc_id_agents_a_id():
         status=404
     )
 
+    headers = {
+        'Authorization': 'Bearer ' + TOKEN
+    }
     response = requests.delete(PATH + '/pta/agents/test', headers=headers)
     assert response.status_code == 404
     assert response.json() == {"error": "Agent not found"}
 
+
 @responses.activate
-def test_documents_delete_doc_id_relations_r_id():
-    # Mock per unauthorized delete
+def test_mock_documents_delete_doc_id_relations_r_id():
+    
     responses.add(
         responses.DELETE,
         f"{PATH}/pta/relations/test",
@@ -674,13 +805,12 @@ def test_documents_delete_doc_id_relations_r_id():
     )
 
     headers = {
-        'Authorization': 'Bearer wrong_token'
+        'Authorization': 'Bearer ' + 'wrong_token'
     }
     response = requests.delete(PATH + '/pta/relations/test', headers=headers)
     assert response.status_code == 403
     assert response.json() == {"error": "Unauthorized"}
 
-    # Mock per successful delete
     responses.add(
         responses.DELETE,
         f"{PATH}/pta/relations/test",
@@ -695,7 +825,6 @@ def test_documents_delete_doc_id_relations_r_id():
     assert response.status_code == 200
     assert response.json() == {"message": "Relation deleted successfully"}
 
-    # Mock per relation not found
     responses.add(
         responses.DELETE,
         f"{PATH}/pta/relations/test",
@@ -703,13 +832,17 @@ def test_documents_delete_doc_id_relations_r_id():
         status=404
     )
 
+    headers = {
+        'Authorization': 'Bearer ' + TOKEN
+    }
     response = requests.delete(PATH + '/pta/relations/test', headers=headers)
     assert response.status_code == 404
     assert response.json() == {"error": "Relation not found"}
 
+
 @responses.activate
-def test_documents_delete_doc_id():
-    # Mock per unauthorized delete
+def test_mock_documents_delete_doc_id():
+    
     responses.add(
         responses.DELETE,
         f"{PATH}/pta",
@@ -718,13 +851,12 @@ def test_documents_delete_doc_id():
     )
 
     headers = {
-        'Authorization': 'Bearer wrong_token'
+        'Authorization': 'Bearer ' + 'wrong_token'
     }
     response = requests.delete(PATH + '/pta', headers=headers)
     assert response.status_code == 403
     assert response.json() == {"error": "Unauthorized"}
 
-    # Mock per successful delete
     responses.add(
         responses.DELETE,
         f"{PATH}/pta",
@@ -739,15 +871,15 @@ def test_documents_delete_doc_id():
     assert response.status_code == 200
     assert response.json() == {"message": "Document deleted successfully"}
 
-    # Mock per document not found
     responses.add(
         responses.DELETE,
         f"{PATH}/pta",
         json={"error": "Document not found"},
         status=404
     )
-
+    headers = {
+        'Authorization': 'Bearer ' + TOKEN
+    }
     response = requests.delete(PATH + '/pta', headers=headers)
     assert response.status_code == 404
     assert response.json() == {"error": "Document not found"}
-"""

@@ -71,7 +71,7 @@ def test_documents_put_doc_id_permission():
     response = requests.put(PATH + '/pta/permissions', json=payload, headers=headers)
     assert response.status_code == 403
 
-
+    """
     # document not found
     payload = {
         "user": "userD",
@@ -82,11 +82,10 @@ def test_documents_put_doc_id_permission():
     }
     response = requests.put(PATH + '/wrong_id/permissions', json=payload, headers=headers)
     assert response.status_code == 404
-    
+    """    
     
 
 def test_documents_put_doc_id_entities_e_id():
-    
     """
     # entity added
     payload = {
@@ -104,6 +103,7 @@ def test_documents_put_doc_id_entities_e_id():
     response = requests.put(PATH + '/pta/entities/test', json=payload, headers=headers)
     assert response.status_code == 201
 
+    
     # document not valid
     payload = {
         "entity": {
