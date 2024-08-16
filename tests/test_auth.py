@@ -11,7 +11,6 @@ PATH = "http://localhost:3000/api/v0/auth"
 
 def test_auth_register():
     
-    """
     # correct new username and password 
     payload = {
         "user": "userA",
@@ -27,7 +26,7 @@ def test_auth_register():
     }
     response = requests.post(PATH + '/register', json=payload)
     assert response.status_code == 201
-    """
+    
     
     # username and password already exist
     payload = {
