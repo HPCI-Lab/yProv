@@ -86,11 +86,10 @@ def test_documents_put_doc_id_permission():
     
 
 def test_documents_put_doc_id_entities_e_id():
-    """
     # entity added
     payload = {
         "entity": {
-            "ophidia:MyNewTest":
+            "ophidia:test":
              {
                   "prov:type": "ophidia:datacube",
                   "prov:name": "test"
@@ -102,6 +101,7 @@ def test_documents_put_doc_id_entities_e_id():
     }
     response = requests.put(PATH + '/pta/entities/test', json=payload, headers=headers)
     assert response.status_code == 201
+    """
 
     
     # document not valid
