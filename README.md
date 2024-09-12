@@ -21,4 +21,4 @@ The SQAaaS platform is not yet able to handle multi-container architectures like
 docker-compose build --no-cache
 docker-compose up
 ```
-There is also an image that allows you to run both unit tests and mock tests inside a single container and this is contained in the hpci-yprov:1.3 folder.
+There is also an image that allows you to run both unit tests and mock tests inside a single container and this is contained in the hpci-yprov:1.3 folder.   
