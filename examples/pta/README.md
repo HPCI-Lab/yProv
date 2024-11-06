@@ -10,7 +10,7 @@ The following commands show how to exploit the yProv service and its RESTful API
 
 - Register to the yProv service
 ```
-curl -X POST http://localhost:3000/api/v0/auth/register -H 'Content-Type: application/json' -d '{"user": “...”, "password": "..."}'
+curl -X POST http://localhost:3000/api/v0/auth/register -H 'Content-Type: application/json' -d '{"user": "...", "password": "..."}'
 ```
 
 - Log in to the service to get a valid token for performing all the other operations
