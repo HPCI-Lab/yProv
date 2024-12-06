@@ -1,4 +1,4 @@
-name: Quality_Assessment_&_Awarding_v2
+name: Quality_Assessment_&_Awarding_v3
 
 on:
   push:
@@ -97,6 +97,39 @@ jobs:
           qc_uni_steps: pytest-test
           repo: https://github.com/HPCI-Lab/yProv.git
           branch: sqa
+
+
+      - name: Trigger SQAaaS Assessment
+        id: trigger_sqaas
+        run: |
+          response=$(curl -X POST "https://sqaaas.eosc-synergy.eu/api/v1/pipelines" \
+            -H "Content-Type: application/json" \
+            -d '{
+                  "repo": "https://github.com/HPCI-Lab/yProv.git",
+                  "branch": "Prov4SQA"
+                }')
+
+          echo "Response: $response"
+          PIPELINE_ID=$(echo "$response" | jq -r '.pipeline_id')
+          echo "Pipeline ID: $PIPELINE_ID"
+          echo "PIPELINE_ID=$PIPELINE_ID" >> $GITHUB_ENV
+
+
+      - name: Fetch pipeline results
+        run: |
+          echo Use the pipeline_id stored in GITHUB_ENV to fetch the results
+          curl -X GET "https://sqaaas.eosc-synergy.eu/api/v1/pipelines/$PIPELINE_ID/output" \
+            -H "Content-Type: application/json" \
+            -o result.json
+        
+      - name: Upload results as an artifact with
+        uses: actions/upload-artifact@v2
+        with:
+          name: sqaas-results-${{ github.sha }}-${{ env.PIPELINE_ID }}
+          path: result.json
+        
+      - name: List the uploaded artifact
+        run: ls -l result.json
 
       - name: Clean up
         run: |
