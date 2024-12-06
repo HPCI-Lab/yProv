@@ -123,7 +123,7 @@ jobs:
             -o result.json
         
       - name: Upload results as an artifact with
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: sqaas-results-${{ github.sha }}-${{ env.PIPELINE_ID }}
           path: result.json
