@@ -98,7 +98,7 @@ export YPROV_TOKEN=[TOKEN]
 
 - Load the JSON document associated to the PTA use case
 ```
-yprov-cli documents create --doc-id pta --file @pta.json
+yprov-cli documents create --doc-id pta --file pta.json
 ```
 
 - Get the list of all the available provenance documents (this is the only operations not requiring a token)
