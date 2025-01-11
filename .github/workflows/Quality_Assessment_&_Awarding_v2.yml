@@ -96,7 +96,7 @@ jobs:
         with:
           qc_uni_steps: pytest-test
           repo: https://github.com/HPCI-Lab/yProv.git
-          branch: sqa
+          branch: NSQA
 
       - name: Clean up
         run: |
