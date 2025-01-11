@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "If you use yProv, please cite it as below."
+title: "yProv"
+authors:
+  - name: "HPCI Lab"
+    affiliation: "University of Trento, CMCC"
+date-released: "-------------"  
+repository-code: "https://github.com/HPCI-Lab/yProv"
+license: "------" 
+version: "------"  
+keywords:
+  - provenance
+  - W3C Provenance
+  - multi-level provenance
+  - yProv
+abstract: >
+  yProv is a provenance service aimed at addressing multi-level provenance as
+  well as reproducibility challenges in climate analytics experiments. It
+  allows scientists to manage provenance information compliant with the W3C PROV
+  standard in a more structured way and navigate and explore the provenance
+  space across multiple dimensions, thus enabling the possibility to get
+  coarse- or fine-grained information according to the level of interest.
+  yProv is a joint project between University of Trento and CMCC.
