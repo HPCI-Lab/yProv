@@ -1,0 +1,99 @@
+name: Quality_Assessment_&_Awarding_v1
+
+on:
+  workflow_dispatch
+    
+jobs:
+  
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Create Docker volumes
+        run: |
+          docker volume create neo4j_data
+          docker volume create neo4j_logs
+          docker volume create yprov_data
+
+      - name: Create Docker network
+        run: docker network create yprov_net
+
+      - name: Start Neo4j service
+        run: |
+          docker run \
+            --name db \
+            --network=yprov_net \
+            -p 7474:7474 -p 7687:7687 \
+            -d \
+            -v neo4j_data:/data \
+            -v neo4j_logs:/logs \
+            -v $HOME/neo4j/import:/var/lib/neo4j/import \
+            -v $HOME/neo4j/plugins:/plugins \
+            --env NEO4J_AUTH=neo4j/password \
+            --env NEO4J_ACCEPT_LICENSE_AGREEMENT=eval \
+            -e NEO4J_apoc_export_file_enabled=true \
+            -e NEO4J_apoc_import_file_enabled=true \
+            -e NEO4J_apoc_import_file_use__neo4j__config=true \
+            -e NEO4J_PLUGINS='["apoc"]' \
+            neo4j:enterprise
+
+      - name: Start API service
+        run: |
+          docker run \
+            --restart on-failure \
+            --name web \
+            --network=yprov_net \
+            -p 3000:3000 \
+            -d \
+            -v yprov_data:/app/conf \
+            --env USER=neo4j \
+            --env PASSWORD=password \
+            hpci/yprov:latest
+
+      - name: Wait for API to be ready
+        run: |
+          echo "Waiting for API to be ready..."
+          max_attempts=30
+          attempt=0
+          until [ $attempt -ge $max_attempts ]
+          do
+            if curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/api/v0/documents | grep -q "200"; then
+              echo "API is ready!"
+              break
+            fi
+            attempt=$((attempt+1))
+            echo "Attempt $attempt/$max_attempts: API is not ready yet. Waiting..."
+            sleep 10
+          done
+
+      - name: Set up Python environment
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install pytest
+
+      - name: Run tests
+        run: |
+          python3 -m pytest -v
+
+      - name: Quality Tests
+        uses: eosc-synergy/sqaaas-assessment-action@v2
+        with:
+          repo: 'https://github.com/HPCI-Lab/yProv.git'
+          branch: 'main'    
+
+      - name: Clean up
+        run: |
+          docker stop web
+          docker rm web
+          docker stop db
+          docker rm db
+          docker network rm yprov_net
+          docker volume rm neo4j_data
+          docker volume rm neo4j_logs
+          docker volume rm yprov_data
