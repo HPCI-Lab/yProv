@@ -81,7 +81,7 @@ jobs:
 
       - name: Run tests
         run: |
-          python3 -m pytest -v tests/test_auth.py tests/test_documents.py
+          python3 -m pytest -v SQA/tests/test_auth.py SQA/tests/test_documents.py
 
       - name: Step definition for validating the workflow
         uses: eosc-synergy/sqaaas-step-action@v1
