@@ -3,7 +3,7 @@ name: Quality_Assessment_&_Awarding_v2
 on:
   push:
     branches:
-      - main
+      - '**'
     
     
 jobs:
