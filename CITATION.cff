@@ -5,7 +5,7 @@ type: software
 authors:
   - family-names: Fiore
     given-names: Sandro
-    email: sandro.fiore.unitn.it
+    email: sandro.fiore@unitn.it
     affiliation: University of Trento
   - family-names: Antonio
     given-names: Fabrizio
