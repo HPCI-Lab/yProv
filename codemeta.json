@@ -8,7 +8,7 @@
             "@type": "Person",
             "givenName": "Sandro",
             "familyName": "Fiore",
-            "email": "sandro.fiore.unitn.it",
+            "email": "sandro.fiore@unitn.it",
             "affiliation": {
                 "@type": "Organization",
                 "name": "University of Trento"
