@@ -1,0 +1,40 @@
+{
+    "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
+    "@type": "Software",
+    "name": "yProv",
+    "description": "yProv is a provenance service aimed at addressing multi-level provenance as well as reproducibility challenges in climate analytics experiments. It allows scientists to manage provenance information compliant with the W3C PROV standard in a more structured way and navigate and explore the provenance space across multiple dimensions, thus enabling the possibility to get coarse- or fine-grained information according to the level of interest. yProv is a joint project between University of Trento and CMCC.",
+    "author": [
+        {
+            "@type": "Person",
+            "givenName": "Sandro",
+            "familyName": "Fiore",
+            "email": "sandro.fiore@unitn.it",
+            "affiliation": {
+                "@type": "Organization",
+                "name": "University of Trento"
+            }
+        },
+        {
+            "@type": "Person",
+            "givenName": "Fabrizio",
+            "familyName": "Antonio",
+            "email": "fabrizio.antonio@cmcc.it",
+            "affiliation": {
+                "@type": "Organization",
+                "name": "CMCC"
+            }
+        }
+    ],
+    "datePublished": "2025-01-14",
+    "license": "MIT",
+    "version": "1.1.0",
+    "codeRepository": "https://github.com/HPCI-Lab/yProv",
+    "keywords": [
+      "provenance",
+      "W3C Provenance",
+      "multi-level provenance",
+      "yProv"
+    ],
+    "programmingLanguage": "Python"
+  }
+  
