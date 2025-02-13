@@ -2,7 +2,7 @@
 
 yProv is a provenance service aimed at addressing multi-level provenance as well as reproducibility challenges in climate analytics experiments. It allows scientists to manage provenance information compliant with the [W3C PROV standard](https://www.w3.org/TR/prov-overview/) in a more structured way and navigate and explore the provenance space across multiple dimensions, thus enabling the possibility to get coarse- or fine-grained information according to the level of interest. 
 
-yProv is a joint project between [University of Trento](https://www.unitn.it) and [CMCC](https://www.cmcc.it).
+yProv is a joint project between [University of Trento]:(https://www.unitn.it) and [CMCC](https://www.cmcc.it).
 
 The deployment consists of two Docker containers:
 - **yProv** Web Service front-end
