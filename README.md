@@ -107,7 +107,7 @@ docker run \
 Neo4j automatically loads any plugins found in the ```/plugins``` folder on startup.
 
 #### Change secret key
-A secret key is used to encode/decode the JSON Web Token for user authentication. The default secret key can be overridden by setting the ```SECRET_KEY``` environment variable:
+A secret key is used to encode & decode the JSON Web Token for user authentication. The default secret key can be overridden by setting the ```SECRET_KEY``` environment variable:
 ```
     docker run \
         --name web \
