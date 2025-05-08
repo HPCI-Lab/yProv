@@ -60,6 +60,10 @@ docker network create yprov_net
         -v yprov_data:/app/conf \
         --env USER=neo4j \
         --env PASSWORD=password \
+        --env CLIENT_ID=<prov_client_id> \
+        --env CLIENT_SECRET=<prov_client_secret> \
+	    --env REQUIRED_ENTITLEMENTS=\[\"urn:mace:egi.eu:group:enes.pilot.eosc-beyond.eu:role=member#aai.egi.eu\"\] \
+        --env INTROSPECTION_ENDPOINT=https://enes-proxy.pilot.eosc-beyond.eu/auth/realms/enes/protocol/openid-connect/token/introspect \
         hpci/yprov:latest
 ```
 
