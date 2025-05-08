@@ -5,9 +5,6 @@
 #docker volume create yprov_data
 #docker network create yprov_net
 
-docker stop web
-docker rm web
-
 docker run \
         --name db \
         --network=yprov_net \
