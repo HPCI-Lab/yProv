@@ -232,7 +232,7 @@ def get_list_of_documents():
 # Create
 @documents_bp.route('/<string:doc_id>', methods=['PUT'])
 @auth_required
-def upload_document(doc_id):
+def upload_document(doc_id,user):
     # check if json
     content_type = request.headers.get('Content-Type')
     if content_type != 'application/json':
@@ -260,8 +260,6 @@ def upload_document(doc_id):
         graph.push(get_ns_node(prov_document))
 
     # add user permission to modify graph
-    token = request.headers["Authorization"].split(" ")[1]
-    user = get_user(token)
     add_new_graph(user, doc_id)
 
     # merge on anonymous label _Node and property id

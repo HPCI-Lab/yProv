@@ -1,5 +1,13 @@
 #!/bin/bash
 
+#docker volume create neo4j_data
+#docker volume create neo4j_logs
+#docker volume create yprov_data
+#docker network create yprov_net
+
+docker stop web
+docker rm web
+
 docker run \
         --name db \
         --network=yprov_net \
@@ -26,4 +34,8 @@ docker run \
         -v yprov_data:/app/conf \
         --env USER=neo4j \
         --env PASSWORD=password \
+        -e CLIENT_ID=<prov_client_id> \
+        -e CLIENT_SECRET=<prov_client_secret> \
+	-e REQUIRED_ENTITLEMENTS=\[\"urn:mace:egi.eu:group:enes.pilot.eosc-beyond.eu:role=member#aai.egi.eu\"\] \
+        -e INTROSPECTION_ENDPOINT=https://enes-proxy.pilot.eosc-beyond.eu/auth/realms/enes/protocol/openid-connect/token/introspect \
         yprov_web
