@@ -8,6 +8,8 @@ The deployment consists of two Docker containers:
 - **yProv** Web Service front-end
 - **Neo4J** graph database engine back-end
 
+Authentication and authorization aspects are handled through the **EGI Check-in** service. More specifically, token introspection allows validating access tokens and checking associated claims (e.g., group membership entitlements) by querying the Authorisation Server of the **ENES Infrastructure Proxy** (https://enes-proxy.pilot.eosc-beyond.eu/auth/realms/enes/.well-known/openid-configuration). To do that, the yProv container make use of four specific environment variables: ```CLIENT_ID```, ```CLIENT_SECRET```, ```REQUIRED_ENTITLEMENTS``` and ```INTROSPECTION_ENDPOINT```.
+
 ### Preliminary setup 
 
 - Create a named volume to make Neo4j data persistent
@@ -62,7 +64,7 @@ docker network create yprov_net
         --env PASSWORD=password \
         --env CLIENT_ID=<prov_client_id> \
         --env CLIENT_SECRET=<prov_client_secret> \
-	    --env REQUIRED_ENTITLEMENTS=\[\"urn:mace:egi.eu:group:enes.pilot.eosc-beyond.eu:role=member#aai.egi.eu\"\] \
+        --env REQUIRED_ENTITLEMENTS=\[\"urn:mace:egi.eu:group:enes.pilot.eosc-beyond.eu:role=member#aai.egi.eu\"\] \
         --env INTROSPECTION_ENDPOINT=https://enes-proxy.pilot.eosc-beyond.eu/auth/realms/enes/protocol/openid-connect/token/introspect \
         hpci/yprov:latest
 ```
